@@ -1,8 +1,9 @@
 \documentclass{report}
 \usepackage[utf8]{inputenc}
 \usepackage{algorithm}
-\usepackage{algorithmic}
 \usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage[noend]{algpseudocode}
 
 \title{\includegraphics[scale=0.3]{logo.png} \\ \textbf{A Performance Evaluation of Programming Languages Operating in Single Core Instructions}}
 \author{Parallel and Distributed Computing \\ Bachelors in Informatics and Computer Engineering \\ \\ 3L.EIC01\_G5   \\ Joel Fernandes up201904977@up.pt \\ Mário Travassos up201905871@up.pt \\ Tiago Rodrigues up201907021@up.pt }
@@ -12,9 +13,7 @@
 \begin{document}
     \maketitle
 
-    \tableofcontents
-
-    \chapter{Introduction}
+    \section*{Introduction}
 
     \paragraph{}This project intends to show and evaluate the effect of processor performance when accessing large amounts of data, performing the same instructions multiple times. In this study, the product of two matrices was used as the base calculation.
 
@@ -22,7 +21,7 @@
 
     \paragraph{}Finally, performance measures were made using the Performance API (PAPI), which will be analyzed and discussed in further detail.
 
-    \section{Problem Description}
+    \section*{Problem Description}
 
     \paragraph{}The problem used to evaluate the performance was the matrix multiplication. It was chosen because the amount of instructions does not impact performance tremendously, with the greatest bottleneck being memory access.
 
@@ -32,25 +31,75 @@
 
     \paragraph{}The first improvement was to multiply by line instead of the usual matrix multiplication. Then, a further improvement made was multiplying by block, which is shown to reduce running times.
 
-    \chapter{Algorithm Analysis}
+    \newpage
 
-    \section{Normal Multiplication}
+    \section*{Algorithm Analysis}
 
-    \section{Line Multiplication}
+    \subsection*{Normal Multiplication}
 
-    \section{Block Multiplication}
+    \paragraph{}The first algorithm developed calculates the matrix product the way that students are traditionally taught in their Algebra class. In this algorithm, values are multiplied sequentially, with the first element being the dot product between the first row from the first matrix and the first column from the second matrix, and so on.
 
-    \chapter{Performance Evaluation}
+    \paragraph{}The following pseudocode details how the algorithm works:
 
-    \section{Metrics Used}
+    \begin{algorithm}
+      \caption{Regular Multiplication}\label{euclid}
+      \begin{algorithmic}[1]
+        \Procedure{Regular Multiplication}{}
+        \While{$i < firstMatrixSize$}
+        \While{$j < secondMatrixSize$}
+        \State $temp \leftarrow 0$
+        \While{$k < firstMatrixSize$}
+        \State $temp \leftarrow temp + firstMatrix_{i, k} + secondMatrix_{k, j}$
+        \State $k$++
+        \EndWhile
+        \State $thirdMatrix_{i, j} \leftarrow temp$
+        \State $j$++
+        \EndWhile
+        \State $i$++
+        \EndWhile
+        \EndProcedure
+      \end{algorithmic}
+    \end{algorithm}
+
+    \paragraph{}Although it is simple to implement and easy to understand as it follows the mathematical definitions, it is not very performant as matrix sizes increase drastically.
+
+    \subsection*{Line Multiplication}
+
+    \paragraph{}In this version of the algorithm, all that is done is a change in the order of operations. Instead of performing the calculations based on the result matrix, we perform them based on the rows of the second matrix. This means that first, all values of the first row of the second matrix are ``used'', and only then does it change to the second one, and so on.
+
+    \paragraph{}To further clarify this, the following pseudocode shows how it works:
+
+    \begin{algorithm}
+      \caption{Line Multiplication}\label{euclid}
+      \begin{algorithmic}[1]
+        \Procedure{Line Multiplication}{}
+        \While{$i < firstMatrixSize$}
+        \While{$j < secondMatrixSize$}
+        \While{$k < firstMatrixSize$}
+        \State $thirdMatrix_{i, k} \leftarrow thirdMatrix_{i, k} + firstMatrix_{i, j} + secondMatrix_{j, k}$
+        \State $k$++
+        \EndWhile
+        \State $j$++
+        \EndWhile
+        \State $i$++
+        \EndWhile
+        \EndProcedure
+      \end{algorithmic}
+    \end{algorithm}
+
+    \subsection*{Block Multiplication}
+
+    \section*{Performance Evaluation}
+
+    \subsection*{Metrics Used}
+
+    \paragraph{}To evaluate the performance of each algorithm, 5 metrics were used to determine both speed and memory performance. To measure speed, the running time of the calculations was measured, in milliseconds. To measure memory access, the Performance API (PAPI) was used, to measure cache hits and misses, both to the L1 and the L2 cache.
+
+    \subsection*{Results Analysis}
 
     \paragraph{}Cringe
 
-    \section{Results Analysis}
-
-    \paragraph{}Cringe
-
-    \chapter{Conclusion}
+    \section*{Conclusion}
 
     \paragraph{}The way and order in which we perform computations can have a great impact on performance. The use of the proper algorithms, even in single core programs, can have a significant impact on processing time as well. Even more, the programming language used and the way it handles memory can also affect the time, as we have shown in this report.
 
