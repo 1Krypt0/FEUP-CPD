@@ -39,24 +39,21 @@
 
     \paragraph{}The first algorithm developed calculates the matrix product the way that students are traditionally taught in their Algebra class. In this algorithm, values are multiplied sequentially, with the first element being the dot product between the first row from the first matrix and the first column from the second matrix, and so on.
 
-    \paragraph{}The following pseudocode details how the algorithm works:
+    \paragraph{}The following pseudocode details how the algorithm works. Here, a is the First Matrix and b the Second one, and they produce the result on Matrix c:
 
     \begin{algorithm}
       \caption{Regular Multiplication}\label{euclid}
       \begin{algorithmic}[1]
-        \Procedure{Regular Multiplication}{}
-        \While{$i < firstMatrixSize$}
-        \While{$j < secondMatrixSize$}
+        \Procedure{Regular Multiplication}{a, b}
+        \For{$i = 0\ to\ length(a)$}
+        \For{$j = 0\ to\ length(b)$}
         \State $temp \leftarrow 0$
-        \While{$k < firstMatrixSize$}
-        \State $temp \leftarrow temp + firstMatrix_{i, k} + secondMatrix_{k, j}$
-        \State $k$++
-        \EndWhile
-        \State $thirdMatrix_{i, j} \leftarrow temp$
-        \State $j$++
-        \EndWhile
-        \State $i$++
-        \EndWhile
+        \For{$k = 0\ to\ length(a)$}
+        \State $temp \leftarrow temp + a_{i, k} + b_{k, j}$
+        \EndFor
+        \State $c_{i, j} \leftarrow temp$
+        \EndFor
+        \EndFor
         \EndProcedure
       \end{algorithmic}
     \end{algorithm}
@@ -67,27 +64,58 @@
 
     \paragraph{}In this version of the algorithm, all that is done is a change in the order of operations. Instead of performing the calculations based on the result matrix, we perform them based on the rows of the second matrix. This means that first, all values of the first row of the second matrix are ``used'', and only then does it change to the second one, and so on.
 
-    \paragraph{}To further clarify this, the following pseudocode shows how it works:
+    \newpage
+
+    \paragraph{}To further clarify this, the following pseudocode shows how it works. Once again, a represents the first matrix, b the second one, and the output will be stored in c:
 
     \begin{algorithm}
       \caption{Line Multiplication}\label{euclid}
       \begin{algorithmic}[1]
-        \Procedure{Line Multiplication}{}
-        \While{$i < firstMatrixSize$}
-        \While{$j < secondMatrixSize$}
-        \While{$k < firstMatrixSize$}
-        \State $thirdMatrix_{i, k} \leftarrow thirdMatrix_{i, k} + firstMatrix_{i, j} + secondMatrix_{j, k}$
-        \State $k$++
-        \EndWhile
-        \State $j$++
-        \EndWhile
-        \State $i$++
-        \EndWhile
+        \Procedure{Line Multiplication}{a, b}
+        \For{$i = 0\ to\ length(a)$}
+        \For{$j = 0\ to\ length(b)$}
+        \For{$k = 0\ to\ length(a)$}
+        \State $c_{i, k} \leftarrow c_{i, k} + a_{i, j} + b_{j, k}$
+        \EndFor
+        \EndFor
+        \EndFor
         \EndProcedure
       \end{algorithmic}
     \end{algorithm}
 
     \subsection*{Block Multiplication}
+
+    \paragraph{}The final algorithm used was the block multiplication method. This takes advantage of the fact that a matrix can be partitioned into sections, called blocks, that can be multiplied together, yielding the same result as the regular multiplication.
+
+    \paragraph{}The following pseudocode can help with understanding how such calculations are done. Again, a is the first matrix, b the second one, and c will store the result of executing the instructions. Also, this time, the size of the blocks is included, as it can affect speed of computations:
+
+    \begin{algorithm}
+      \caption{Block Multiplication}\label{euclid}
+      \begin{algorithmic}[1]
+        \Procedure{FindSmallest}{index, blockSize, size}
+        \If{$index + blockSize > size$}
+        \State \Return $size$
+        \Else
+        \State \Return $index + blockSize$
+        \EndIf
+        \EndProcedure
+        \Procedure{Block Multiplication}{a, b, blockSize}
+        \For{$jj = 0\ to\ length(a)\ in\ blockSize\ increments$}
+        \For{$kk = 0\ to\ length(a)\ in\ blockSize\ increments$}
+        \For{$i = 0\ to\ length(a)$}
+        \For{$j = jj\ to\ FindSmallest(jj, bkSize, length(a))$}
+        \For{$k = kk\ to\ FindSmallest(kk, bkSize, length(a))$}
+        \State $c_{i, j} \leftarrow c_{i, j} + a_{i, k} + b_{k, j}$
+        \EndFor
+        \EndFor
+        \EndFor
+        \EndFor
+        \EndFor
+        \EndProcedure
+      \end{algorithmic}
+    \end{algorithm}
+
+    \paragraph{}Even though the number of loops increased, this proved to be the fastest algorithm, as will be later analyzed in the next section.
 
     \section*{Performance Evaluation}
 
@@ -101,9 +129,9 @@
 
     \section*{Conclusion}
 
-    \paragraph{}The way and order in which we perform computations can have a great impact on performance. The use of the proper algorithms, even in single core programs, can have a significant impact on processing time as well. Even more, the programming language used and the way it handles memory can also affect the time, as we have shown in this report.
+    \paragraph{}The way and order in which we perform computations can have a great impact on performance. The use of the proper algorithms, even in single core programs, can have a significant impact on processing time as well. Even more, the programming language used and the way it handles memory can also affect the time, as it has been shown in this report.
 
-    \paragraph{}The result turns what to be what was expected, with a language designed for speed like C++ beating out Java in every metric. Mention cache hits and misses whenever they are available
+    \paragraph{}The result turns what to be what was expected, with a language designed for speed like C++ beating out Java in every metric. \textbf{Mention cache hits and misses whenever they are available}
 
     \paragraph{}With this in mind, the report is satisfactory, as it concludes what was thought to be true beforehand, and it contributed to our knowledge of how machine instructions, order of operations and memory access can have a significant impact on the speed of programs.
 
