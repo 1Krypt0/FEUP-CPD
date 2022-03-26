@@ -1,5 +1,5 @@
 all:
-	g++ -O2 matrixproduct.cpp -o fileout -lpapi
+	g++ -O2 matrixproduct.cpp -o matrixproduct -lpapi
 
 clean:
 	rm fileout
