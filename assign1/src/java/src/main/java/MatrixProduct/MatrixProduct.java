@@ -13,9 +13,10 @@ public class MatrixProduct {
         scanner.nextLine();
         return retVal;
     }
+
     static void onMult(int m_ar, int m_br) {
 
-        long time1, time2;
+        double time1, time2;
         double temp;
         int i, j, k;
 
@@ -51,17 +52,19 @@ public class MatrixProduct {
 
         time2 = System.currentTimeMillis();
 
-        System.out.println("Time: " + (time2 - time1) + " milliseconds");
-
+        System.out.println("Time: " + (time2 - time1)/1000 + " seconds");
+        /*
         System.out.println("Result Matrix:");
         for (i = 0; i < min(10, m_br); i++) {
             System.out.print(phc[i] + " ");
         }
+         */
         System.out.print("\n");
+        return;
     }
 
     static void onMultLine(int m_ar, int m_br) {
-        long time1, time2;
+        double time1, time2;
         int i, j, k;
         double temp;
 
@@ -79,7 +82,7 @@ public class MatrixProduct {
             for (j = 0; j < m_br; j++) {
                phb[i * m_br + j] = (double) (i + 1);
             }
-        }
+        }System.out.print("\n");
 
         for (i = 0; i < m_ar; i++) {
             for (j = 0; j < m_ar; j++) {
@@ -99,13 +102,15 @@ public class MatrixProduct {
 
         time2 = System.currentTimeMillis();
 
-        System.out.println("Time: " + (time2 - time1) + " milliseconds");
-
+        System.out.println("Time: " + (time2 - time1)/1000 + " seconds");
+/*
         System.out.println("Result Matrix:");
         for (i = 0; i < min(10, m_br); i++) {
             System.out.print(phc[i] + " ");
         }
+ */
         System.out.print("\n");
+        return;
     }
 
 
@@ -133,7 +138,6 @@ public class MatrixProduct {
                     default:
                         return;
                 }
-                onMult(600, 600);
             } catch (InputMismatchException e) {
                 System.out.println("You must input a valid integer.");
                 scanner.next();
