@@ -52,7 +52,7 @@ public class MatrixProduct {
 
         time2 = System.currentTimeMillis();
 
-        System.out.println("Time: " + (time2 - time1)/1000 + " seconds");
+        System.out.println("\nTime: " + (time2 - time1)/1000 + " seconds");
         /*
         System.out.println("Result Matrix:");
         for (i = 0; i < min(10, m_br); i++) {
@@ -102,7 +102,7 @@ public class MatrixProduct {
 
         time2 = System.currentTimeMillis();
 
-        System.out.println("Time: " + (time2 - time1)/1000 + " seconds");
+        System.out.println("\nTime: " + (time2 - time1)/1000 + " seconds");
 /*
         System.out.println("Result Matrix:");
         for (i = 0; i < min(10, m_br); i++) {
