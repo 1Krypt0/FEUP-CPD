@@ -8,7 +8,7 @@ import static java.lang.Math.min;
 public class MatrixProduct {
 
     static int getDimensions(Scanner scanner){
-        System.out.println("Dimensions: lins=cols ? ");
+        System.out.print("Dimensions: lins=cols ? ");
         int retVal = scanner.nextInt();
         scanner.nextLine();
         return retVal;
@@ -173,18 +173,22 @@ public class MatrixProduct {
                 System.out.print("Selection?: ");
                 op = scanner.nextInt();
                 scanner.nextLine();
+                int dim = 0;
                 switch (op) {
                     case 1:
-                        op = getDimensions(scanner);
-                        onMult(op, op);
+                        dim = getDimensions(scanner);
+                        onMult(dim, dim);
                         break;
                     case 2:
-                        op = getDimensions(scanner);
-                        System.out.println("missing implementation");
+                        dim = getDimensions(scanner);
+                        onMultLine(dim, dim);
                         break;
                     case 3:
-                        //IMPLEMENT
-                        System.out.println("missing implementation");
+                        dim = getDimensions(scanner);
+                        System.out.print("Block Size?: ");
+                        int bkSize = scanner.nextInt();
+                        scanner.nextLine();
+                        onMultBlock(dim, dim, bkSize);
                         break;
                     default:
                         return;
