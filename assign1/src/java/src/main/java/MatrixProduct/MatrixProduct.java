@@ -108,58 +108,6 @@ public class MatrixProduct {
         System.out.print("\n");
     }
 
-    static void onMultBlock(int m_ar, int m_br, int bkSize) {
-        long time1, time2;
-        int i, j, k;
-
-        double[] pha = new double[m_ar * m_ar];
-        double[] phb = new double[m_ar * m_ar];
-        double[] phc = new double[m_ar * m_ar];
-
-        for (i = 0; i < m_ar; i++) {
-            for (j = 0; j < m_br; j++) {
-                phc[i * m_ar + j] = 0;
-            }
-        }
-
-        for (i = 0; i < m_ar; i++) {
-            for (j = 0; j < m_br; j++) {
-                pha[i * m_ar + j] = (double) 1.0;
-            }
-        }
-
-        for (i = 0; i < m_br; i++) {
-            for (j = 0; j < m_br; j++) {
-                phb[i * m_br + j] = (double) (i + 1);
-            }
-        }
-
-        time1 = System.currentTimeMillis();
-
-        for (int jj = 0; jj < m_ar; jj += bkSize) {
-            for (int kk = 0; kk < m_ar; kk += bkSize) {
-                for (i = 0; i < m_ar; i++) {
-                    for (j = jj; j < (Math.min((jj + bkSize), m_ar)); j++) {
-                        for (k = kk; k < (Math.min((kk + bkSize), m_ar)); k++) {
-                            phc[i * m_ar + k] += pha[i * m_ar + j] * phb[j * m_br + k];
-                        }
-                    }
-                }
-            }
-        }
-
-        time2 = System.currentTimeMillis();
-
-        System.out.println("Time: " + (time2 - time1) + " milliseconds");
-
-        System.out.println("Result Matrix:");
-        for (i = 0; i < min(10, m_br); i++) {
-            System.out.print(phc[i] + " ");
-        }
-        System.out.print("\n");
-
-    }
-
 
 
     public static void main(String[] args) {
@@ -169,7 +117,6 @@ public class MatrixProduct {
             try {
                 System.out.println("1. Multiplication");
                 System.out.println("2. Line Multiplication");
-                System.out.println("3. Block Multiplication");
                 System.out.print("Selection?: ");
                 op = scanner.nextInt();
                 scanner.nextLine();
@@ -182,13 +129,6 @@ public class MatrixProduct {
                     case 2:
                         dim = getDimensions(scanner);
                         onMultLine(dim, dim);
-                        break;
-                    case 3:
-                        dim = getDimensions(scanner);
-                        System.out.print("Block Size?: ");
-                        int bkSize = scanner.nextInt();
-                        scanner.nextLine();
-                        onMultBlock(dim, dim, bkSize);
                         break;
                     default:
                         return;
