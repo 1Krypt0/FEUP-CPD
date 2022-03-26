@@ -1,3 +1,6 @@
+package MatrixProduct;
+
+import java.util.InputMismatchException;
 import java.util.Scanner;
 
 import static java.lang.Math.min;
@@ -50,7 +53,7 @@ public class MatrixProduct {
 
         System.out.println("Time: " + (time2 - time1) + " milliseconds");
 
-        SSystem.out.println("Result Matrix:");
+        System.out.println("Result Matrix:");
         for (i = 0; i < min(10, m_br); i++) {
             System.out.print(phc[i] + " ");
         }
@@ -160,21 +163,17 @@ public class MatrixProduct {
 
 
     public static void main(String[] args) {
-        System.out.println("1");
         Scanner scanner = new Scanner(System.in);
-        int op = 0;
+        int op = -1;
         do {
-            System.out.println("2");
-            System.out.println("1. Multiplication");
-            System.out.println("2. Line Multiplication");
-            System.out.println("3. Block Multiplication");
-            System.out.print("Selection?: ");
-            System.out.println("3");
-            op = scanner.nextInt();
-            System.out.println("4");
-            scanner.nextLine();
-            System.out.println("5");
-                switch(op) {
+            try {
+                System.out.println("1. Multiplication");
+                System.out.println("2. Line Multiplication");
+                System.out.println("3. Block Multiplication");
+                System.out.print("Selection?: ");
+                op = scanner.nextInt();
+                scanner.nextLine();
+                switch (op) {
                     case 1:
                         op = getDimensions(scanner);
                         onMult(op, op);
@@ -190,7 +189,11 @@ public class MatrixProduct {
                     default:
                         return;
                 }
-            onMult(600, 600);
+                onMult(600, 600);
+            } catch (InputMismatchException e) {
+                System.out.println("You must input a valid integer.");
+                scanner.next();
+            }
         } while (op != 0);
         scanner.close();
         return;
