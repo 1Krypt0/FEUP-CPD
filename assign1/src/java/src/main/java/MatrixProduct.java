@@ -50,13 +50,11 @@ public class MatrixProduct {
 
         System.out.println("Time: " + (time2 - time1) + " milliseconds");
 
-        System.out.println("Result Matrix:");
-        for (i = 0; i < 1; i++) {
-            for (j = 0; j < min(10, m_br); j++) {
-                System.out.print(phc[j] + " ");
-            }
-            System.out.print("\n");
+        SSystem.out.println("Result Matrix:");
+        for (i = 0; i < min(10, m_br); i++) {
+            System.out.print(phc[i] + " ");
         }
+        System.out.print("\n");
     }
 
     static void onMultLine(int m_ar, int m_br) {
@@ -101,12 +99,10 @@ public class MatrixProduct {
         System.out.println("Time: " + (time2 - time1) + " milliseconds");
 
         System.out.println("Result Matrix:");
-        for (i = 0; i < 1; i++) {
-            for (j = 0; j < min(10, m_br); j++) {
-                System.out.print(phc[j] + " ");
-            }
-            System.out.print("\n");
+        for (i = 0; i < min(10, m_br); i++) {
+            System.out.print(phc[i] + " ");
         }
+        System.out.print("\n");
     }
 
     static void onMultBlock(int m_ar, int m_br, int bkSize) {
@@ -142,7 +138,7 @@ public class MatrixProduct {
                 for (i = 0; i < m_ar; i++) {
                     for (j = jj; j < (Math.min((jj + bkSize), m_ar)); j++) {
                         for (k = kk; k < (Math.min((kk + bkSize), m_ar)); k++) {
-                            phc[i * m_ar + j] += pha[i * m_ar + k] * phb[k * m_br + j];
+                            phc[i * m_ar + k] += pha[i * m_ar + j] * phb[j * m_br + k];
                         }
                     }
                 }
@@ -154,12 +150,10 @@ public class MatrixProduct {
         System.out.println("Time: " + (time2 - time1) + " milliseconds");
 
         System.out.println("Result Matrix:");
-        for (i = 0; i < 1; i++) {
-            for (j = 0; j < min(10, m_br); j++) {
-                System.out.print(phc[j] + " ");
-            }
-            System.out.print("\n");
+        for (i = 0; i < min(10, m_br); i++) {
+            System.out.print(phc[i] + " ");
         }
+        System.out.print("\n");
 
     }
 

@@ -51,11 +51,10 @@ void OnMult(int m_ar, int m_br) {
 
   // display 10 elements of the result matrix tto verify correctness
   cout << "Result matrix: " << endl;
-  for (i = 0; i < m_ar; i++) {
-    for (j = 0; j < m_br; j++)
-      cout << phc[i * m_ar + j] << " ";
-    cout << endl;
+  for (i = 0; i < min(10, m_ar); i++) {
+      cout << phc[i] << " ";
   }
+  cout << endl;
 
   free(pha);
   free(phb);
@@ -105,10 +104,8 @@ void OnMultLine(int m_ar, int m_br) {
 
   // display 10 elements of the result matrix tto verify correctness
   cout << "Result matrix: " << endl;
-  for (i = 0; i < m_ar; i++) {
-    for (j = 0; j < m_ar; j++)
-      cout << phc[j] << " ";
-    cout << endl;
+  for (i = 0; i < min(10, m_ar); i++) {
+      cout << phc[i] << " ";
   }
   cout << endl;
 
@@ -152,7 +149,7 @@ void OnMultBlock(int m_ar, int m_br, int bkSize) {
       for (i = 0; i < m_ar; i++) {
         for (j = jj; j < ((jj + bkSize) > m_ar ? m_ar : (jj + bkSize)); j++) {
           for (k = kk; k < ((kk + bkSize) > m_ar ? m_ar : (kk + bkSize)); k++) {
-            phc[i * m_ar + j] += pha[i * m_ar + k] * phb[k * m_br + j];
+            phc[i * m_ar + k] += pha[i * m_ar + j] * phb[j * m_br + k];
           }
         }
       }
@@ -166,11 +163,10 @@ void OnMultBlock(int m_ar, int m_br, int bkSize) {
 
   // display 10 elements of the result matrix to verify correctness
   cout << "Result matrix: " << endl;
-  for (i = 0; i < m_ar; i++) {
-    for (j = 0; j < m_br; j++)
-      cout << phc[i * m_ar + j] << " ";
-    cout << endl;
+  for (i = 0; i < min(10, m_ar); i++) {
+      cout << phc[i] << " ";
   }
+  cout << endl;
 
   free(pha);
   free(phb);
