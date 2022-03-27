@@ -3,8 +3,14 @@ plugins {
     id 'application'
 }
 
+group 'MatrixProduct'
+
 application {
-    mainClass='MatrixProduct'
+    mainClass.set('MatrixProduct.MatrixProduct')
+}
+
+run{
+    standardInput = System.in;
 }
 
 group 'org.example'
