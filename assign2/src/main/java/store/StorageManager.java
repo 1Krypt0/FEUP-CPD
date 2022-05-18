@@ -44,10 +44,10 @@ public class StorageManager implements Serializable {
         return new String(Files.readAllBytes(filePath));
     }
 
-    // TODO: 5/17/22 Implement Storage functions to abstract details of dealing with files
+    // TODO: 5/17/22 Implement Storage functions to abstract details of dealing with
+    // files
     public String writeFile(String fileName, String fileContents) {
         return "";
     }
-
 
 }

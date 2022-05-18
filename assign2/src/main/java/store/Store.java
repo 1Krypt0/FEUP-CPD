@@ -1,22 +1,27 @@
 package store;
 
+import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
+import communication.MessageDispatcher;
+
 public class Store implements IStore {
 
-    /*
-    public static void main(String[] args) throws NoSuchAlgorithmException {
-        byte[] res = new Store().getHash(new byte[] {0x2});
-        System.out.println(res.length);
-    }
-    */
+    private final MessageDispatcher dispatcher;
 
+    // Thread Pool -> Launches and terminates threads
+    // Launches one thread to listen to messages, which in itself launches a thread
+    // per message received
     public static void main(String[] args) {
         if (args.length != 4) {
             System.out.println("Correct usage: java Store <IP_mcast_addr> <IP_mcast_port> <node_id>  <Store_port> ");
         }
 
+    }
+
+    public Store(String[] args) throws IOException {
+        this.dispatcher = new MessageDispatcher(Integer.parseInt(args[3]));
     }
 
     private byte[] getHash(byte[] value) throws NoSuchAlgorithmException {
@@ -26,7 +31,8 @@ public class Store implements IStore {
     }
 
     @Override
-    public void put(byte[] key, String value) {
+    public void put(byte[] key, String value) throws NoSuchAlgorithmException {
+        System.out.println(getHash(key));
     }
 
     @Override
