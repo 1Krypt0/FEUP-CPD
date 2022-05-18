@@ -1,13 +1,22 @@
-package node;
+package store;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
 public class Store implements IStore {
 
+    /*
     public static void main(String[] args) throws NoSuchAlgorithmException {
         byte[] res = new Store().getHash(new byte[] {0x2});
         System.out.println(res.length);
+    }
+    */
+
+    public static void main(String[] args) {
+        if (args.length != 4) {
+            System.out.println("Correct usage: java Store <IP_mcast_addr> <IP_mcast_port> <node_id>  <Store_port> ");
+        }
+
     }
 
     private byte[] getHash(byte[] value) throws NoSuchAlgorithmException {
