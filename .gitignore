@@ -28,6 +28,9 @@ replay_pid*
 **/out/
 **/build/
 
+**/.classpath
+**/.project
+
 *.iml
 modules.xml
 .idea/misc.xml
