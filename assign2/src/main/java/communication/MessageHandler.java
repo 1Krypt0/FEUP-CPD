@@ -12,18 +12,18 @@ import store.Store;
 public class MessageHandler implements Runnable {
 
     private final byte[] messageData;
-    private final int messsageLength;
+    private final int messageLength;
     private final Store store;
 
     public MessageHandler(byte[] messageData, int messageLength, Store store) throws IOException {
         this.messageData = messageData;
-        this.messsageLength = messageLength;
+        this.messageLength = messageLength;
         this.store = store;
     }
 
     @Override
     public void run() {
-        Message message = Message.parseMessage(messageData, messsageLength, store);
+        Message message = Message.parseMessage(messageData, messageLength, store);
         if (message != null) {
             message.handleMessage();
         }
