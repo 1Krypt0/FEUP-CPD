@@ -30,6 +30,12 @@ public class MulticastDispatcher extends Thread {
         this.store = store;
     }
 
+    /**
+     *
+     * Loop responsible for receiving Messages from other nodes in the network
+     * Executor service launches a thread that will handle the message accordingly
+     * That message will interface with the store to do the right actions
+     */
     @Override
     public void run() {
         while (true) {
@@ -43,5 +49,16 @@ public class MulticastDispatcher extends Thread {
             }
         }
 
+    }
+
+    public void sendMessage(byte[] message) {
+        DatagramPacket packet = new DatagramPacket(message, message.length);
+
+        try {
+            this.socket.send(packet);
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.out.println("Error sending multicast packet: " + e.getMessage());
+        }
     }
 }
