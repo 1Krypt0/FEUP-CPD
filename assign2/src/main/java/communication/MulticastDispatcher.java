@@ -33,13 +33,11 @@ public class MulticastDispatcher extends Thread {
             DatagramPacket packet = new DatagramPacket(buf, buf.length);
             try {
                 socket.receive(packet);
+                executorService.submit(new MessageHandler(packet.getData(), packet.getLength()));
             } catch (IOException e) {
                 e.printStackTrace();
                 System.err.println("Error receiving message: " + e.getMessage());
             }
-            // TODO: Create thread to handle received message String received = new
-            // executorService.submit(new MessageDispatcher)
-            // String(packet.getData(), 0, packet.getLength());
         }
     }
 }
