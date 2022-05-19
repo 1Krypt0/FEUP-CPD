@@ -2,33 +2,34 @@ package communication.messages;
 
 import java.util.Arrays;
 
+import store.Store;
 import utils.Utils;
 
 public abstract class Message {
 
+    protected final Store store;
+
+    public Message(Store store) {
+        this.store = store;
+    }
+
     public abstract void handleMessage();
 
-    public static Message parseMessage(byte[] messageData, int messageLength) {
+    public static Message parseMessage(byte[] messageData, int messageLength, Store store) {
         int headerEndIdx = Utils.findHeaderEnd(messageData);
         String[] messageHeader = new String(Arrays.copyOf(messageData, headerEndIdx)).split(" ");
 
         switch (messageHeader[1]) {
         case "JOIN":
-            break;
+            return new JoinMessage(store);
         case "LEAVE":
-            break;
+            return new LeaveMessage(store);
+        case "MEMBERSHIP":
+            return new MembershipMessage(store);
         default:
             return null;
         }
 
-        return new Message() {
-
-            @Override
-            public void handleMessage() {
-
-            }
-
-        };
     }
 }
 
