@@ -4,13 +4,11 @@ public abstract class Message {
 
     public abstract void handleMessage();
 
-    // TODO: Only a stub, change for appropraite factory
-    public static Message parseMessage() {
+    public static Message parseMessage(byte[] messageData, int messageLength) {
         return new Message() {
 
             @Override
             public void handleMessage() {
-                // TODO Auto-generated method stub
 
             }
 
@@ -18,16 +16,14 @@ public abstract class Message {
     }
 }
 
-// TODO: 5/19/22 Use MulticastSocket to manage multicast messages Message must
-// have value of membership counter,
-// initially set to 0. Membership counters should be stored in a file. When a
-// node receives a message, it should add
-// an entry to a log file, with the joining node's id and the counter value
+// TODO: 5/19/22 Use MulticastSocket to manage multicast messages. Message must
+// have value of membership counter, initially set to 0. Membership counters
+// should be stored in a file. When a node receives a message, it should add an
+// entry to a log file, with the joining node's id and the counter value
 
 // TODO: 5/19/22 When a node joins the channel, it will receive from other nodes
-// a MEMBERSHIP message. This message
-// includes the other nodes in the cluster, as well as the 32 most recent log
-// events
+// a MEMBERSHIP message. This message includes the other nodes in the cluster,
+// as well as the 32 most recent log events
 
 // TODO: 5/19/22 Before a node sends a join, it should start by accepting TCP
 // connections in this (use a Socket for
