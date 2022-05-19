@@ -4,13 +4,13 @@ import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
-import communication.MessageHandler;
 import communication.MulticastDispatcher;
 
 public class Store implements IStore {
 
     private final MulticastDispatcher dispatcher;
 
+    // TODO: Change to file for persistent storage
     public int membershipCounter;
 
     // Thread Pool -> Launches and terminates threads
