@@ -4,11 +4,14 @@ import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
-import communication.MessageDispatcher;
+import communication.MessageHandler;
+import communication.MulticastDispatcher;
 
 public class Store implements IStore {
 
-    private final MessageDispatcher dispatcher;
+    private final MulticastDispatcher dispatcher;
+
+    public int membershipCounter;
 
     // Thread Pool -> Launches and terminates threads
     // Launches one thread to listen to messages, which in itself launches a thread
@@ -21,7 +24,8 @@ public class Store implements IStore {
     }
 
     public Store(String[] args) throws IOException {
-        this.dispatcher = new MessageDispatcher(Integer.parseInt(args[3]));
+        this.dispatcher = new MulticastDispatcher(args[0], Integer.parseInt(args[1]), this);
+        this.membershipCounter = -1;
     }
 
     private byte[] getHash(byte[] value) throws NoSuchAlgorithmException {
