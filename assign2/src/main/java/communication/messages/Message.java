@@ -1,10 +1,26 @@
 package communication.messages;
 
+import java.util.Arrays;
+
+import utils.Utils;
+
 public abstract class Message {
 
     public abstract void handleMessage();
 
     public static Message parseMessage(byte[] messageData, int messageLength) {
+        int headerEndIdx = Utils.findHeaderEnd(messageData);
+        String[] messageHeader = new String(Arrays.copyOf(messageData, headerEndIdx)).split(" ");
+
+        switch (messageHeader[1]) {
+        case "JOIN":
+            break;
+        case "LEAVE":
+            break;
+        default:
+            return null;
+        }
+
         return new Message() {
 
             @Override
