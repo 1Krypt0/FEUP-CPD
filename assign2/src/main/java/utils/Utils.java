@@ -1,7 +1,6 @@
 package utils;
 
 public class Utils {
-    public static final int THREAD_NUMBER = 32;
     public static final String CRLF = "\r\n";
 
     public static int findHeaderEnd(byte[] message) {

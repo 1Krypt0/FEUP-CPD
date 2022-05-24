@@ -4,16 +4,15 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
 
 import store.Store;
-import utils.Utils;
 
 public class MulticastDispatcher extends Thread {
     private final String ip;
     private final int port;
-    private final ScheduledExecutorService executorService;
+    private final ExecutorService executorService;
     private final MulticastSocket socket;
     private final InetAddress group;
     private final byte[] buf;
@@ -22,7 +21,7 @@ public class MulticastDispatcher extends Thread {
     public MulticastDispatcher(String ip, int port, Store store) throws IOException {
         this.ip = ip;
         this.port = port;
-        this.executorService = Executors.newScheduledThreadPool(Utils.THREAD_NUMBER);
+        this.executorService = Executors.newCachedThreadPool();
         this.socket = new MulticastSocket(port);
         this.group = InetAddress.getByName(ip);
         this.socket.joinGroup(group);
