@@ -10,8 +10,6 @@ import java.util.concurrent.Executors;
 import store.Store;
 
 public class MulticastDispatcher extends Thread {
-    private final String ip;
-    private final int port;
     private final ExecutorService executorService;
     private final MulticastSocket socket;
     private final InetAddress group;
@@ -19,8 +17,6 @@ public class MulticastDispatcher extends Thread {
     private final Store store;
 
     public MulticastDispatcher(String ip, int port, Store store) throws IOException {
-        this.ip = ip;
-        this.port = port;
         this.executorService = Executors.newCachedThreadPool();
         this.socket = new MulticastSocket(port);
         this.group = InetAddress.getByName(ip);
@@ -47,7 +43,6 @@ public class MulticastDispatcher extends Thread {
                 System.err.println("Error receiving message: " + e.getMessage());
             }
         }
-
     }
 
     public void sendMessage(byte[] message) {

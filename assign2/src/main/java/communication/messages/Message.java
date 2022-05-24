@@ -19,7 +19,7 @@ public abstract class Message {
         int headerEndIdx = Utils.findHeaderEnd(messageData);
         String[] messageHeader = new String(Arrays.copyOf(messageData, headerEndIdx)).split(" ");
 
-        switch (messageHeader[1]) {
+        switch (messageHeader[0]) {
         case "JOIN":
             return new JoinMessage(store);
         case "LEAVE":
