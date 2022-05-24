@@ -5,6 +5,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
 import communication.MulticastDispatcher;
+import utils.Utils;
 
 public class Store implements IStore {
 
@@ -28,14 +29,9 @@ public class Store implements IStore {
         this.membershipCounter = -1;
     }
 
-    private byte[] getHash(byte[] value) throws NoSuchAlgorithmException {
-        MessageDigest digest = MessageDigest.getInstance("SHA-256");
-        return digest.digest(value);
-    }
-
     @Override
     public void put(byte[] key, String value) throws NoSuchAlgorithmException {
-        System.out.println(getHash(key));
+        System.out.println(Utils.getHash(key));
     }
 
     @Override
