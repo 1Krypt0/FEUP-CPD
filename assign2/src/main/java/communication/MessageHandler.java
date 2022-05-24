@@ -7,19 +7,17 @@ import store.Store;
 
 public class MessageHandler implements Runnable {
 
-    private final byte[] messageData;
-    private final int messageLength;
+    private final String messageData;
     private final Store store;
 
-    public MessageHandler(byte[] messageData, int messageLength, Store store) throws IOException {
+    public MessageHandler(String messageData, Store store) throws IOException {
         this.messageData = messageData;
-        this.messageLength = messageLength;
         this.store = store;
     }
 
     @Override
     public void run() {
-        Message message = Message.parseMessage(messageData, messageLength, store);
+        Message message = Message.parseMessage(messageData, store);
         if (message != null) {
             message.handleMessage();
         }
