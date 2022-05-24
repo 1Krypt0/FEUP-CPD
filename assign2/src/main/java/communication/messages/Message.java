@@ -29,7 +29,6 @@ public abstract class Message {
         default:
             return null;
         }
-
     }
 }
 

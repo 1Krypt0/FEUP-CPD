@@ -30,7 +30,6 @@ public class Store implements IStore {
 
     private byte[] getHash(byte[] value) throws NoSuchAlgorithmException {
         MessageDigest digest = MessageDigest.getInstance("SHA-256");
-
         return digest.digest(value);
     }
 
