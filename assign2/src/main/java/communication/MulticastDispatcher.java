@@ -51,8 +51,8 @@ public class MulticastDispatcher extends Thread {
         try {
             this.socket.send(packet);
         } catch (IOException e) {
-            e.printStackTrace();
             System.out.println("Error sending multicast packet: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 }

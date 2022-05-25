@@ -2,6 +2,7 @@ package communication;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.concurrent.ExecutorService;
@@ -14,12 +15,14 @@ public class TCPDispatcher extends Thread {
     private final ExecutorService executorService;
     private final byte[] buf;
     private final Store store;
+    private final ServerSocket serverSocket;
 
     public TCPDispatcher(int port, Store store) throws IOException {
         this.port = port;
         this.executorService = Executors.newCachedThreadPool();
         this.buf = new byte[512];
         this.store = store;
+        this.serverSocket = new ServerSocket(port);
     }
 
     @Override
@@ -34,6 +37,19 @@ public class TCPDispatcher extends Thread {
                 System.out.println("Error " + e.getMessage());
                 e.printStackTrace();
             }
+        }
+    }
+
+    public void sendMessage(byte[] message) {
+        try {
+            Socket sender = serverSocket.accept();
+            OutputStream stream = sender.getOutputStream();
+            stream.write(message);
+            stream.flush();
+            stream.close();
+        } catch (IOException e) {
+            System.out.println("Error sending TCP message: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 }
