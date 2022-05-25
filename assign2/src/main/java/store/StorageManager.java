@@ -7,12 +7,12 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-public class StorageManager implements Serializable {
+public class StorageManager {
     private static final String STORAGE_DIR = "/storage/";
     private final String ROOT_DIR;
 
-    public StorageManager(String nodeDir) {
-        this.ROOT_DIR = STORAGE_DIR + nodeDir + "/";
+    public StorageManager(int nodeDir) {
+        this.ROOT_DIR = STORAGE_DIR + Integer.toString(nodeDir) + "/";
 
         try {
             String absolutePath = System.getProperty("user.dir") + ROOT_DIR;
@@ -50,4 +50,12 @@ public class StorageManager implements Serializable {
         return "";
     }
 
+    public void updateMembershipLog(int nodeID, int membershipCounter) {
+        // TODO: Complete Method
+    }
+
+    public String getMembershipLog() {
+        // TODO: Complete Method
+        return "";
+    }
 }
