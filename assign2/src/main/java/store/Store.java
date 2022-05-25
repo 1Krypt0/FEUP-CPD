@@ -5,10 +5,12 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
 import communication.MulticastDispatcher;
+import communication.TCPDispatcher;
 
 public class Store implements IStore {
 
-    private final MulticastDispatcher dispatcher;
+    private final MulticastDispatcher multicastDispatcher;
+    private final TCPDispatcher tcpDispatcher;
 
     // TODO: Change to file for persistent storage
     public int membershipCounter;
@@ -24,7 +26,8 @@ public class Store implements IStore {
     }
 
     public Store(String[] args) throws IOException {
-        this.dispatcher = new MulticastDispatcher(args[0], Integer.parseInt(args[1]), this);
+        this.multicastDispatcher = new MulticastDispatcher(args[0], Integer.parseInt(args[1]), this);
+        this.tcpDispatcher = new TCPDispatcher(Integer.parseInt(args[3]), this);
         this.membershipCounter = -1;
     }
 
