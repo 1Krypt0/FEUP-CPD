@@ -1,6 +1,7 @@
 package communication;
 
 import java.io.IOException;
+import java.net.DatagramPacket;
 import java.net.InetSocketAddress;
 import java.net.MulticastSocket;
 import java.net.NetworkInterface;
@@ -10,6 +11,7 @@ import java.util.concurrent.Executors;
 
 import store.Node;
 
+// TODO: Send Multicast message
 public class MulticastDispatcher extends Thread {
 
     private final ExecutorService executorService;
@@ -27,10 +29,21 @@ public class MulticastDispatcher extends Thread {
         this.socket.joinGroup(address, networkInterface);
     }
 
+    /**
+     * Keep loop tight to be highly available. Use threads to handle everything
+     */
     @Override
     public void run() {
         while (true) {
-
+            DatagramPacket packet = new DatagramPacket(buf, buf.length);
+            try {
+                socket.receive(packet);
+                executorService.submit(new MessageParser(packet.getData(), node));
+            } catch (IOException e) {
+                System.out.println("Error receiving multicast packet: " + e.getMessage());
+                e.printStackTrace();
+            }
         }
     }
+
 }
