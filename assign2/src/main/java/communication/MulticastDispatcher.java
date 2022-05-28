@@ -11,7 +11,6 @@ import java.util.concurrent.Executors;
 
 import store.Node;
 
-// TODO: Send Multicast message
 public class MulticastDispatcher extends Thread {
 
     private final ExecutorService executorService;
@@ -47,4 +46,14 @@ public class MulticastDispatcher extends Thread {
         }
     }
 
+    public void sendMessage(byte[] msg) {
+        DatagramPacket packet = new DatagramPacket(msg, msg.length);
+
+        try {
+            socket.send(packet);
+        } catch (IOException e) {
+            System.out.println("Error sending Multicast Messages: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
 }
