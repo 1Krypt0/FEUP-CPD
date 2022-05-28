@@ -8,4 +8,8 @@ public class LeaveMessage extends Message {
 
     }
 
+    public byte[] composeMessage() {
+        return null;
+    }
+
 }

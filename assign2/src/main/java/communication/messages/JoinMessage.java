@@ -8,4 +8,7 @@ public class JoinMessage extends Message {
 
     }
 
+    public byte[] composeMessage() {
+        return null;
+    }
 }

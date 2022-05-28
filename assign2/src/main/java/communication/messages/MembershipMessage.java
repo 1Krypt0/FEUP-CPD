@@ -8,4 +8,8 @@ public class MembershipMessage extends Message {
 
     }
 
+    public byte[] composeMessage() {
+        return null;
+    }
+
 }
