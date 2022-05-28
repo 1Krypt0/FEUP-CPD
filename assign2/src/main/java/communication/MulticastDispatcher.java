@@ -38,6 +38,7 @@ public class MulticastDispatcher extends Thread {
             DatagramPacket packet = new DatagramPacket(buf, buf.length);
             try {
                 socket.receive(packet);
+                System.out.println("Multicast Dispatcher Received a Message!");
                 executorService.submit(new MessageParser(packet.getData(), node));
             } catch (IOException e) {
                 System.out.println("Error receiving multicast packet: " + e.getMessage());

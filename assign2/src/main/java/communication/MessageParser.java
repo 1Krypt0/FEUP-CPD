@@ -19,8 +19,8 @@ public class MessageParser implements Runnable {
 
     @Override
     public void run() {
+        System.out.println("Parsing the message");
         Message message = Message.parseMessage(msg, node);
-
         message.handleMessage();
     }
 }
