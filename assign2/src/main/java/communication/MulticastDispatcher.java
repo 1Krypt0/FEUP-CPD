@@ -2,10 +2,12 @@ package communication;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.MulticastSocket;
 import java.net.NetworkInterface;
 import java.net.SocketAddress;
+import java.net.UnknownHostException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -17,13 +19,18 @@ public class MulticastDispatcher extends Thread {
     private final Node node;
     private final MulticastSocket socket;
     private final byte[] buf;
+    private final SocketAddress address;
+    private final int port;
+    private final String ip;
 
     public MulticastDispatcher(final String ip, final int port, final Node node) throws IOException {
         this.executorService = Executors.newCachedThreadPool();
         this.node = node;
         this.buf = new byte[512];
         this.socket = new MulticastSocket(port);
-        final SocketAddress address = new InetSocketAddress(ip, port);
+        this.address = new InetSocketAddress(ip, port);
+        this.ip = ip;
+        this.port = port;
         final NetworkInterface networkInterface = NetworkInterface.getByName(ip);
         this.socket.joinGroup(address, networkInterface);
     }
@@ -47,8 +54,9 @@ public class MulticastDispatcher extends Thread {
         }
     }
 
-    public void sendMessage(final byte[] msg) {
-        final DatagramPacket packet = new DatagramPacket(msg, msg.length);
+    public void sendMessage(final byte[] msg) throws UnknownHostException {
+        InetAddress address = InetAddress.getByName(this.ip);
+        final DatagramPacket packet = new DatagramPacket(msg, msg.length, address, port);
 
         try {
             socket.send(packet);
