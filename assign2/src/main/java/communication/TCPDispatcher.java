@@ -19,7 +19,7 @@ public class TCPDispatcher extends Thread {
     private final Node node;
     private final ServerSocket serverSocket; // Passive socket for listening to messages
 
-    public TCPDispatcher(int port, Node node) throws IOException {
+    public TCPDispatcher(final int port, final Node node) throws IOException {
         this.executorService = Executors.newCachedThreadPool();
         this.node = node;
         this.serverSocket = new ServerSocket(port);
@@ -27,38 +27,40 @@ public class TCPDispatcher extends Thread {
 
     @Override
     public void run() {
+        System.out.println("TCP Dispatcher is now running");
         while (true) {
             try {
-                Socket socket = serverSocket.accept();
+                final Socket socket = serverSocket.accept();
 
-                InputStream stream = socket.getInputStream();
+                final InputStream stream = socket.getInputStream();
 
-                byte[] msg = stream.readAllBytes();
+                final byte[] msg = stream.readAllBytes();
 
                 System.out.println("Received TCP message with contents: " + msg.toString());
 
                 executorService.submit(new MessageParser(msg, node));
 
-            } catch (IOException e) {
+            } catch (final IOException e) {
                 System.out.println("Error reading TCP message: " + e.getMessage());
                 e.printStackTrace();
             }
         }
     }
 
-    public void sendMessage(byte[] msg, String destinationIP, int destinationPort) throws IOException {
+    public void sendMessage(final byte[] msg, final String destinationIP, final int destinationPort)
+            throws IOException {
 
         try {
-            InetAddress address = InetAddress.getByName(destinationIP);
-            Socket socket = new Socket(address, destinationPort);
+            final InetAddress address = InetAddress.getByName(destinationIP);
+            final Socket socket = new Socket(address, destinationPort);
 
-            OutputStream stream = socket.getOutputStream();
-            PrintWriter writer = new PrintWriter(stream, true);
+            final OutputStream stream = socket.getOutputStream();
+            final PrintWriter writer = new PrintWriter(stream, true);
             writer.print(msg);
 
             socket.close();
 
-        } catch (UnknownHostException e) {
+        } catch (final UnknownHostException e) {
             System.out.println("Could not find remote machine");
             e.printStackTrace();
         }

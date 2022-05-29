@@ -18,13 +18,13 @@ public class MulticastDispatcher extends Thread {
     private final MulticastSocket socket;
     private final byte[] buf;
 
-    public MulticastDispatcher(String ip, int port, Node node) throws IOException {
+    public MulticastDispatcher(final String ip, final int port, final Node node) throws IOException {
         this.executorService = Executors.newCachedThreadPool();
         this.node = node;
         this.buf = new byte[512];
         this.socket = new MulticastSocket(port);
-        SocketAddress address = new InetSocketAddress(ip, port);
-        NetworkInterface networkInterface = NetworkInterface.getByName(ip);
+        final SocketAddress address = new InetSocketAddress(ip, port);
+        final NetworkInterface networkInterface = NetworkInterface.getByName(ip);
         this.socket.joinGroup(address, networkInterface);
     }
 
@@ -33,25 +33,26 @@ public class MulticastDispatcher extends Thread {
      */
     @Override
     public void run() {
+        System.out.println("Multicast dispatcher is now running");
         while (true) {
-            DatagramPacket packet = new DatagramPacket(buf, buf.length);
+            final DatagramPacket packet = new DatagramPacket(buf, buf.length);
             try {
                 socket.receive(packet);
                 System.out.println("Multicast Dispatcher Received a Message!");
                 executorService.submit(new MessageParser(packet.getData(), node));
-            } catch (IOException e) {
+            } catch (final IOException e) {
                 System.out.println("Error receiving multicast packet: " + e.getMessage());
                 e.printStackTrace();
             }
         }
     }
 
-    public void sendMessage(byte[] msg) {
-        DatagramPacket packet = new DatagramPacket(msg, msg.length);
+    public void sendMessage(final byte[] msg) {
+        final DatagramPacket packet = new DatagramPacket(msg, msg.length);
 
         try {
             socket.send(packet);
-        } catch (IOException e) {
+        } catch (final IOException e) {
             System.out.println("Error sending Multicast Messages: " + e.getMessage());
             e.printStackTrace();
         }
