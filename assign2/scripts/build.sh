@@ -1,3 +1,3 @@
 #!/usr/bin/env bash
 
-javac -d build */*.java */*/*.java */*/*.java
+javac -d ../../../build */*.java */*/*.java
