@@ -54,11 +54,12 @@ public class MulticastDispatcher extends Thread {
         }
     }
 
-    public void sendMessage(final byte[] msg) throws UnknownHostException {
-        InetAddress address = InetAddress.getByName(this.ip);
-        final DatagramPacket packet = new DatagramPacket(msg, msg.length, address, port);
-
+    public void sendMessage(final byte[] msg) {
+        InetAddress address;
         try {
+            address = InetAddress.getByName(this.ip);
+            final DatagramPacket packet = new DatagramPacket(msg, msg.length, address, port);
+
             socket.send(packet);
         } catch (final IOException e) {
             System.out.println("Error sending Multicast Messages: " + e.getMessage());
