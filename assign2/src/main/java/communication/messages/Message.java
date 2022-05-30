@@ -13,21 +13,29 @@ public abstract class Message {
         this.store = store;
     }
 
+    public Message() {
+        this.store = null;
+    }
+
     public abstract void handleMessage();
+
 
     public static Message parseMessage(byte[] messageData, Store store) {
         int headerEndIdx = Utils.findHeaderEnd(messageData);
+        if (headerEndIdx == -1) {
+            return null;
+        }
         String[] messageHeaders = new String(Arrays.copyOf(messageData, headerEndIdx + 1)).split(Utils.CRLF);
 
         byte[] messageBody = Arrays.copyOfRange(messageData, headerEndIdx + 5, messageData.length);
 
         switch (messageHeaders[0]) {
         case "JOIN":
-            return new JoinMessage(store);
+            return new JoinMessage();
         case "LEAVE":
-            return new LeaveMessage(store);
+            return new LeaveMessage();
         case "MEMBERSHIP":
-            return new MembershipMessage(store);
+            return new MembershipMessage();
         case "PUT":
             return new PutMessage(messageBody, store);
         case "GET":

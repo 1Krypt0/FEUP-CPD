@@ -1,5 +1,6 @@
 package communication.messages;
 
+import jdk.jshell.execution.Util;
 import store.Store;
 import utils.Utils;
 
@@ -18,10 +19,18 @@ public class PutMessage extends Message{
         public void handleMessage() {
             try {
                 //TODO: To anything with the data that this function returns (send it to the client)
-                store.put(Utils.getHash(this.body), this.body);
+                store.put(Utils.getHash(this.body), new String(this.body, StandardCharsets.UTF_8));
             } catch (NoSuchAlgorithmException e) {
                 throw new RuntimeException(e);
             }
+        }
+
+        public static byte[] composeMessage(String fileName) {
+            String string = "PUT" +
+                    Utils.CRLF + Utils.CRLF +
+                    fileName;
+
+            return string.getBytes(StandardCharsets.UTF_8);
         }
 
 }

@@ -1,6 +1,7 @@
 package communication.messages;
 
 import store.Store;
+import utils.Utils;
 
 import java.nio.charset.StandardCharsets;
 
@@ -15,5 +16,10 @@ public class DeleteMessage extends Message {
     @Override
     public void handleMessage() {
         store.delete(this.body);
+    }
+
+    public static byte[] composeMessage(String data) {
+        String string = "DELETE" + Utils.CRLF + Utils.CRLF + data;
+        return string.getBytes(StandardCharsets.UTF_8);
     }
 }

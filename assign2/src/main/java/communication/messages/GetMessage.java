@@ -1,6 +1,7 @@
 package communication.messages;
 
 import store.Store;
+import utils.Utils;
 
 import java.nio.charset.StandardCharsets;
 
@@ -15,5 +16,10 @@ public class GetMessage extends Message {
     @Override
     public void handleMessage() {
         store.get(this.body);
+    }
+
+    public static byte[] composeMessage(String data) {
+        String string = "GET" + Utils.CRLF + Utils.CRLF + data;
+        return string.getBytes(StandardCharsets.UTF_8);
     }
 }

@@ -4,13 +4,17 @@ import store.Store;
 
 public class MembershipMessage extends Message {
 
-    public MembershipMessage(Store store) {
-        super(store);
+    public MembershipMessage() {
+        super();
     }
 
     @Override
     public void handleMessage() {
 
+    }
+
+    public static byte[] composeMessage() {
+        return null;
     }
 
 }

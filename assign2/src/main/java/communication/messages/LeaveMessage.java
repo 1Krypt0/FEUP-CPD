@@ -4,12 +4,15 @@ import store.Store;
 
 public class LeaveMessage extends Message {
 
-    public LeaveMessage(Store store) {
-        super(store);
+    public LeaveMessage() {
+        super();
     }
 
     @Override
     public void handleMessage() {
     }
 
+    public static byte[] composeMessage() {
+        return null;
+    }
 }

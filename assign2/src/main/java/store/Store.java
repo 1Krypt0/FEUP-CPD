@@ -30,7 +30,7 @@ public class Store implements IStore {
     }
 
     @Override
-    public void put(byte[] key, byte[] value) throws NoSuchAlgorithmException {
+    public void put(byte[] key, String value) throws NoSuchAlgorithmException {
 
     }
 
