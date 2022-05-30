@@ -49,8 +49,7 @@ public class TCPDispatcher extends Thread {
         }
     }
 
-    public void sendMessage(final byte[] msg, final String destinationIP, final int destinationPort)
-            throws IOException {
+    public void sendMessage(final byte[] msg, final String destinationIP, final int destinationPort) {
         try {
             final InetAddress address = InetAddress.getByName(destinationIP);
             final Socket socket = new Socket(address, destinationPort);
@@ -65,6 +64,9 @@ public class TCPDispatcher extends Thread {
 
         } catch (final UnknownHostException e) {
             System.out.println("Could not find remote machine");
+            e.printStackTrace();
+        } catch (IOException e) {
+            System.out.println("Error sending TCP message: " + e.getMessage());
             e.printStackTrace();
         }
     }
