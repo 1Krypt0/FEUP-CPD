@@ -12,7 +12,7 @@ public class MembershipMessage extends Message {
 
     @Override
     public void handleMessage() {
-        this.node.handleMembership();
+        this.node.receiveMembershipMessage();
     }
 
     public byte[] composeMessage() {
