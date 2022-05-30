@@ -4,11 +4,10 @@ public class JoinMessage extends Message {
 
     @Override
     public void handleMessage() {
-        // TODO Auto-generated method stub
 
     }
 
-    public byte[] composeMessage() {
-        return null;
+    public byte[] composeMessage(int id, int membershipCounter) {
+        return ("JOIN id:" + id + " membership:" + membershipCounter).getBytes();
     }
 }
