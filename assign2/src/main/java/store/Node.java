@@ -30,7 +30,6 @@ public class Node {
             try {
                 final Node node = new Node(args);
                 node.enterCluster();
-                System.out.println("Dispatchers have been initialized");
             } catch (NumberFormatException e) {
                 e.printStackTrace();
             }
@@ -97,11 +96,19 @@ public class Node {
         // NOTE: Membership handling will go here
     }
 
+    public void receiveJoinMessage(int senderID, int membershipCounter) {
+        if (senderID == nodeID) {
+            System.out.println("This message came from me, I will ignore it");
+        } else {
+            System.out
+                    .println("This message came from node " + senderID + " who has membership of " + membershipCounter);
+        }
+    }
+
     private void sendJoinMessage() {
         // FORMAT
         // JOIN id:<id> membership:<membership>
-        JoinMessage message = new JoinMessage();
-        byte[] msg = message.composeMessage(this.nodeID, this.membershipCounter);
+        byte[] msg = JoinMessage.composeMessage(this.nodeID, this.membershipCounter);
         this.multicastDispatcher.sendMessage(msg);
     }
 }
