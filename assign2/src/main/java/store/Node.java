@@ -3,6 +3,7 @@ package store;
 import communication.MulticastDispatcher;
 import communication.TCPDispatcher;
 import communication.messages.JoinMessage;
+import communication.messages.MembershipMessage;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -13,6 +14,7 @@ public class Node {
     private static final String LOCALHOST = "localhost";
 
     private final int nodeID;
+    private final int tcpPort;
     private int membershipCounter;
     private int receivedMembershipMessages;
 
@@ -43,6 +45,7 @@ public class Node {
         this.membershipCounter = -1;
         this.receivedMembershipMessages = 0;
         this.nodeID = Integer.parseInt(args[2]);
+        this.tcpPort = Integer.parseInt(args[3]);
 
         this.clusterIPs = new HashMap<Integer, String>();
         this.clusterPorts = new HashMap<Integer, Integer>();
@@ -52,6 +55,7 @@ public class Node {
 
         try {
             this.initDispatchers(args);
+            this.enterCluster();
         } catch (NumberFormatException e) {
             e.printStackTrace();
         } catch (IOException e) {
@@ -65,7 +69,7 @@ public class Node {
         final Thread multicastThread = new Thread(this.multicastDispatcher);
         multicastThread.start();
 
-        this.tcpDispatcher = new TCPDispatcher(Integer.parseInt(args[3]), this);
+        this.tcpDispatcher = new TCPDispatcher(this.tcpPort, this);
         final Thread tcpThread = new Thread(this.tcpDispatcher);
         tcpThread.start();
     }
@@ -80,7 +84,7 @@ public class Node {
     public void enterCluster() {
         this.membershipCounter++;
         int sentJoinMessages = 0;
-
+        System.out.println("My membership counter is " + membershipCounter);
         while (sentJoinMessages != 3) {
             sendJoinMessage();
             sentJoinMessages++;
@@ -94,24 +98,38 @@ public class Node {
         }
     }
 
-    public void receiveMembershipMessage(String[] header, String body) {
-        this.receivedMembershipMessages++;
-        System.out.println("Handling membership message");
-        // NOTE: Membership handling will go here
-
-    }
-
-    public void receiveJoinMessage(int senderID, int membershipCounter) {
-        if (senderID == nodeID) {
-            System.out.println("This message came from me, I will ignore it");
+    public void receiveMembershipMessage(int senderID, String members, String body) {
+        if (senderID == this.nodeID) {
+            System.out.println("This MEMBERSHIP Message came from myself, ignoring");
         } else {
-            System.out
-                    .println("This message came from node " + senderID + " who has membership of " + membershipCounter);
+            this.receivedMembershipMessages++;
+            System.out.println("Handling membership message");
+            this.logManager.writeToLog("This is amazing");
         }
     }
 
+    public void receiveJoinMessage(int senderID, int membershipCounter, String senderIP, int senderPort) {
+        if (senderID == nodeID) {
+            System.out.println("This message came from me, I will ignore it");
+        } else {
+            System.out.println("This message came from node " + senderID + " who has membership of " + membershipCounter
+                    + " and a port of " + senderPort);
+            // TODO: Change to appropriate IP when it is available
+            sendMembershipMessage(senderIP, senderPort);
+        }
+    }
+
+    // NOTE: For now, the destination IP is localhost because we are not sure if the
+    // ID will be the same as the ip
     private void sendJoinMessage() {
-        final byte[] msg = JoinMessage.composeMessage(this.nodeID, this.membershipCounter);
+        final byte[] msg = JoinMessage.composeMessage(this.nodeID, this.membershipCounter, "localhost", this.tcpPort);
         this.multicastDispatcher.sendMessage(msg);
+        System.out.println("Sent a join message with contents " + new String(msg));
+    }
+
+    private void sendMembershipMessage(String destinationIP, int destinationPort) {
+        // TODO: Change to proper data
+        final byte[] msg = MembershipMessage.composeMessage(this.nodeID, "members", "Important log Data");
+        this.tcpDispatcher.sendMessage(msg, destinationIP, destinationPort);
     }
 }
