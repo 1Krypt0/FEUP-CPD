@@ -7,10 +7,10 @@ import store.Store;
 
 public class MessageHandler implements Runnable {
 
-    private final String messageData;
+    private final byte[] messageData;
     private final Store store;
 
-    public MessageHandler(String messageData, Store store) throws IOException {
+    public MessageHandler(byte[] messageData, Store store) throws IOException {
         this.messageData = messageData;
         this.store = store;
     }

@@ -30,8 +30,8 @@ public class Store implements IStore {
     }
 
     @Override
-    public void put(byte[] key, String value) throws NoSuchAlgorithmException {
-        System.out.println(Utils.getHash(key));
+    public void put(byte[] key, byte[] value) throws NoSuchAlgorithmException {
+
     }
 
     @Override

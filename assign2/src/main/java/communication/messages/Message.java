@@ -3,6 +3,7 @@ package communication.messages;
 import java.util.Arrays;
 
 import store.Store;
+import utils.Utils;
 
 public abstract class Message {
 
@@ -14,12 +15,11 @@ public abstract class Message {
 
     public abstract void handleMessage();
 
-    public static Message parseMessage(String messageData, Store store) {
-        String crlf = "\r\n";
+    public static Message parseMessage(byte[] messageData, Store store) {
+        int headerEndIdx = Utils.findHeaderEnd(messageData);
+        String[] messageHeaders = new String(Arrays.copyOf(messageData, headerEndIdx + 1)).split(Utils.CRLF);
 
-        String[] messageParts = messageData.split(crlf+crlf);
-        String[] messageHeaders = messageParts[0].split(crlf);
-        String messageBody = messageParts[1];
+        byte[] messageBody = Arrays.copyOfRange(messageData, headerEndIdx + 5, messageData.length);
 
         switch (messageHeaders[0]) {
         case "JOIN":
