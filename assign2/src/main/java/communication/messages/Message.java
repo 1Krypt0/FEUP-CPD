@@ -9,8 +9,6 @@ public abstract class Message {
 
     public static Message parseMessage(byte[] msg, Node node) {
 
-        System.out.println("Message is " + msg.toString());
-
         String messageType = separateHeader(msg)[0];
 
         switch (messageType) {
@@ -23,6 +21,9 @@ public abstract class Message {
         case "MEMBERSHIP":
             System.out.println("This is a MEMBERSHIP message");
             return new MembershipMessage();
+        case "ELECTION":
+            System.out.println("This is an ELECTION message");
+            return new ElectionMessage();
         default:
             break;
         }
