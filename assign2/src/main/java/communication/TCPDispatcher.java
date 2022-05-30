@@ -36,7 +36,9 @@ public class TCPDispatcher extends Thread {
 
                 final byte[] msg = stream.readAllBytes();
 
-                System.out.println("Received TCP message with contents: " + msg.toString());
+                String message = new String(msg);
+
+                System.out.println("Received TCP message with contents: " + message);
 
                 executorService.submit(new MessageParser(msg, node));
 
@@ -49,14 +51,15 @@ public class TCPDispatcher extends Thread {
 
     public void sendMessage(final byte[] msg, final String destinationIP, final int destinationPort)
             throws IOException {
-
         try {
             final InetAddress address = InetAddress.getByName(destinationIP);
             final Socket socket = new Socket(address, destinationPort);
 
             final OutputStream stream = socket.getOutputStream();
             final PrintWriter writer = new PrintWriter(stream, true);
-            writer.print(msg);
+            final String message = new String(msg);
+
+            writer.println(message);
 
             socket.close();
 
