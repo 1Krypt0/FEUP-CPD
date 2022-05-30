@@ -20,7 +20,7 @@ public abstract class Message {
             return new LeaveMessage();
         case "MEMBERSHIP":
             System.out.println("This is a MEMBERSHIP message");
-            return new MembershipMessage();
+            return new MembershipMessage(node);
         case "ELECTION":
             System.out.println("This is an ELECTION message");
             return new ElectionMessage();

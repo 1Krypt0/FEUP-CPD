@@ -29,6 +29,7 @@ public class Node {
         } else {
             try {
                 final Node node = new Node(args);
+                node.enterCluster();
                 System.out.println("Dispatchers have been initialized");
             } catch (NumberFormatException e) {
                 e.printStackTrace();
@@ -102,7 +103,5 @@ public class Node {
         JoinMessage message = new JoinMessage();
         byte[] msg = message.composeMessage(this.nodeID, this.membershipCounter);
         this.multicastDispatcher.sendMessage(msg);
-
-        // TODO: Await for receival of MEMBERSHIP
     }
 }
