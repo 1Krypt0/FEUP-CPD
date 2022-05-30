@@ -26,6 +26,11 @@ replay_pid*
 **/.idea/
 **/.gradle/
 **/out/
+**/build/
+
+**/.classpath
+**/.project
+**/.settings/
 
 *.iml
 modules.xml
