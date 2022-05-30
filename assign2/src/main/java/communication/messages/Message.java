@@ -1,9 +1,11 @@
 package communication.messages;
 
+import java.util.Arrays;
+
 import store.Node;
 
 public abstract class Message {
-    private static final String CRLF = "\r\n";
+    public static final String CRLF = "\r\n";
 
     public abstract void handleMessage();
 
@@ -11,6 +13,7 @@ public abstract class Message {
 
         String[] messageHeader = separateHeader(msg);
         String messageBody = separateBody(msg);
+        System.out.println("The message body is " + messageBody);
         String messageType = messageHeader[0];
 
         System.out.println("The message is of type " + messageType);
@@ -42,7 +45,8 @@ public abstract class Message {
 
     private static String separateBody(byte[] msg) {
         String[] message = new String(msg).split(CRLF + CRLF);
-        String messageHeader = message[1];
-        return messageHeader;
+        System.out.println("The message in separateBody is " + Arrays.toString(message));
+        String messageBody = message.length == 1 ? "" : message[1];
+        return messageBody;
     }
 }
