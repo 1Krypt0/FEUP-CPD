@@ -94,10 +94,11 @@ public class Node {
         }
     }
 
-    public void receiveMembershipMessage() {
+    public void receiveMembershipMessage(String[] header, String body) {
         this.receivedMembershipMessages++;
         System.out.println("Handling membership message");
         // NOTE: Membership handling will go here
+
     }
 
     public void receiveJoinMessage(int senderID, int membershipCounter) {

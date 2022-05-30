@@ -10,6 +10,7 @@ public abstract class Message {
     public static Message parseMessage(byte[] msg, Node node) {
 
         String[] messageHeader = separateHeader(msg);
+        String messageBody = separateBody(msg);
         String messageType = messageHeader[0];
 
         System.out.println("The message is of type " + messageType);
@@ -23,7 +24,7 @@ public abstract class Message {
             return new LeaveMessage();
         case "MEMBERSHIP":
             System.out.println("This is a MEMBERSHIP message");
-            return new MembershipMessage(node);
+            return new MembershipMessage(node, messageHeader, messageBody);
         case "ELECTION":
             System.out.println("This is an ELECTION message");
             return new ElectionMessage();
@@ -36,6 +37,12 @@ public abstract class Message {
     private static String[] separateHeader(byte[] msg) {
         String[] message = new String(msg).split(CRLF + CRLF);
         String[] messageHeader = message[0].split(" ");
+        return messageHeader;
+    }
+
+    private static String separateBody(byte[] msg) {
+        String[] message = new String(msg).split(CRLF + CRLF);
+        String messageHeader = message[1];
         return messageHeader;
     }
 }
