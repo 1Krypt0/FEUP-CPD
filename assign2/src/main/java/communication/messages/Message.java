@@ -9,12 +9,15 @@ public abstract class Message {
 
     public static Message parseMessage(byte[] msg, Node node) {
 
-        String messageType = separateHeader(msg)[0];
+        String[] messageHeader = separateHeader(msg);
+        String messageType = messageHeader[0];
+
+        System.out.println("The message is of type " + messageType);
 
         switch (messageType) {
         case "JOIN":
             System.out.println("This is a JOIN message");
-            return new JoinMessage();
+            return new JoinMessage(messageHeader, node);
         case "LEAVE":
             System.out.println("This is a LEAVE message");
             return new LeaveMessage();
@@ -32,7 +35,7 @@ public abstract class Message {
 
     private static String[] separateHeader(byte[] msg) {
         String[] message = new String(msg).split(CRLF + CRLF);
-        String[] messageHeader = message[0].split(CRLF);
+        String[] messageHeader = message[0].split(" ");
         return messageHeader;
     }
 }
