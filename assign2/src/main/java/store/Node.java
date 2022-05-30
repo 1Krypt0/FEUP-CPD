@@ -16,6 +16,8 @@ public class Node {
     private int membershipCounter;
     private int receivedMembershipMessages;
 
+    private final LogManager logManager;
+
     private final HashMap<Integer, String> clusterIPs;
     private final HashMap<Integer, Integer> clusterPorts;
     private final List<Integer> clusterIDs;
@@ -45,6 +47,8 @@ public class Node {
         this.clusterIPs = new HashMap<Integer, String>();
         this.clusterPorts = new HashMap<Integer, Integer>();
         this.clusterIDs = new ArrayList<Integer>();
+
+        this.logManager = new LogManager(this.nodeID);
 
         try {
             this.initDispatchers(args);
@@ -90,7 +94,7 @@ public class Node {
         }
     }
 
-    public void handleMembership() {
+    public void receiveMembershipMessage() {
         this.receivedMembershipMessages++;
         System.out.println("Handling membership message");
         // NOTE: Membership handling will go here
@@ -106,9 +110,7 @@ public class Node {
     }
 
     private void sendJoinMessage() {
-        // FORMAT
-        // JOIN id:<id> membership:<membership>
-        byte[] msg = JoinMessage.composeMessage(this.nodeID, this.membershipCounter);
+        final byte[] msg = JoinMessage.composeMessage(this.nodeID, this.membershipCounter);
         this.multicastDispatcher.sendMessage(msg);
     }
 }
