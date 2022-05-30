@@ -5,22 +5,24 @@ import store.Node;
 public class MembershipMessage extends Message {
 
     private final Node node;
-    private final String[] messageHeader;
-    private final String messageBody;
+    private final String[] header;
+    private final String body;
 
-    public MembershipMessage(Node node, String[] messageHeader, String messageBody) {
+    public MembershipMessage(Node node, String[] header, String body) {
         this.node = node;
-        this.messageHeader = messageHeader;
-        this.messageBody = messageBody;
+        this.header = header;
+        this.body = body;
     }
 
     @Override
     public void handleMessage() {
-        this.node.receiveMembershipMessage(messageHeader, messageBody);
+        int senderID = Integer.parseInt(this.header[1].split(":")[1]);
+        String members = this.header[2].split(":")[1];
+        this.node.receiveMembershipMessage(senderID, members, body);
     }
 
-    public byte[] composeMessage() {
-        return null;
+    public static byte[] composeMessage(int id, String members, String logData) {
+        return ("MEMBERSHIP id:" + id + " members:" + members + Message.CRLF + Message.CRLF + logData).getBytes();
     }
 
 }
