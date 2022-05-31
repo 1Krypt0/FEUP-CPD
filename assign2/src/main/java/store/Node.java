@@ -33,7 +33,6 @@ public class Node {
         } else {
             try {
                 final Node node = new Node(args);
-                node.enterCluster();
             } catch (NumberFormatException e) {
                 e.printStackTrace();
             }
