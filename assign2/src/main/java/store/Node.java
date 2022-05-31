@@ -4,15 +4,18 @@ import communication.MulticastDispatcher;
 import communication.TCPDispatcher;
 import communication.messages.JoinMessage;
 import communication.messages.MembershipMessage;
+import communication.messages.Message;
+import utils.Utils;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class Node {
-    private static final String LOCALHOST = "localhost";
-
     private final int nodeID;
     private final int tcpPort;
     private int membershipCounter;
@@ -22,7 +25,7 @@ public class Node {
 
     private final HashMap<Integer, String> clusterIPs;
     private final HashMap<Integer, Integer> clusterPorts;
-    private final List<Integer> clusterIDs;
+    private List<Integer> clusterIDs;
 
     private MulticastDispatcher multicastDispatcher;
     private TCPDispatcher tcpDispatcher;
@@ -49,6 +52,8 @@ public class Node {
         this.clusterIPs = new HashMap<Integer, String>();
         this.clusterPorts = new HashMap<Integer, Integer>();
         this.clusterIDs = new ArrayList<Integer>();
+
+        this.clusterIDs.add(this.nodeID);
 
         this.logManager = new LogManager(this.nodeID);
 
