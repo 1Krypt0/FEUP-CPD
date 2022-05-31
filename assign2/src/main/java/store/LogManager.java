@@ -73,9 +73,7 @@ public class LogManager {
             System.out.println("Error closing log File: " + e.getMessage());
             e.printStackTrace();
         }
-
         return null;
-
     }
 
 }

@@ -144,6 +144,7 @@ public class Node {
             clusterMembers += Integer.toString(id) + "-";
         }
 
+        logEvents = logEvents.substring(0, logEvents.length() - 1);
         clusterMembers = clusterMembers.substring(0, clusterMembers.length() - 1);
 
         final byte[] msg = MembershipMessage.composeMessage(this.nodeID, clusterMembers, logEvents);
