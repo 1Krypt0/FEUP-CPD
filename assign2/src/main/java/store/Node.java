@@ -3,6 +3,7 @@ package store;
 import communication.MulticastDispatcher;
 import communication.TCPDispatcher;
 import communication.messages.JoinMessage;
+import communication.messages.LeaveMessage;
 import communication.messages.MembershipMessage;
 import utils.Utils;
 
@@ -94,6 +95,16 @@ public class Node {
         }
     }
 
+    public void leaveCluster() {
+        this.membershipCounter++;
+        final String logMessage = Integer.toString(this.nodeID) + " LEAVE " + Integer.toString(membershipCounter)
+                + "\n";
+        logManager.writeToLog(logMessage);
+        sendLeaveMessage();
+        this.multicastDispatcher.stopLoop();
+        this.tcpDispatcher.stopLoop();
+    }
+
     public void receiveMembershipMessage(final int senderID, final String members, final String body) {
         if (senderID == this.nodeID) {
         } else {
@@ -125,12 +136,22 @@ public class Node {
         }
     }
 
+    public void receiveLeaveMessage(int senderID, int membershipCounter) {
+
+    }
+
     // NOTE: For now, the destination IP is localhost because we are not sure if the
     // ID will be the same as the ip
     private void sendJoinMessage() {
         final byte[] msg = JoinMessage.composeMessage(this.nodeID, this.membershipCounter, "localhost", this.tcpPort);
         this.multicastDispatcher.sendMessage(msg);
         System.out.println("Sent a JOIN message with contents " + new String(msg));
+    }
+
+    private void sendLeaveMessage() {
+        final byte[] msg = LeaveMessage.composeMessage(this.nodeID, this.membershipCounter);
+        this.multicastDispatcher.sendMessage(msg);
+        System.out.println("Sent a LEAVE message with contents " + new String(msg));
     }
 
     private void sendMembershipMessage(final String destinationIP, final int destinationPort) {
