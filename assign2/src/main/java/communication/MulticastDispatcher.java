@@ -21,6 +21,7 @@ public class MulticastDispatcher extends Thread {
     private final SocketAddress address;
     private final int port;
     private final String ip;
+    private boolean working;
 
     public MulticastDispatcher(final String ip, final int port, final Node node) throws IOException {
         this.executorService = Executors.newCachedThreadPool();
@@ -32,6 +33,13 @@ public class MulticastDispatcher extends Thread {
         this.port = port;
         final NetworkInterface networkInterface = NetworkInterface.getByName(ip);
         this.socket.joinGroup(address, networkInterface);
+        this.working = true;
+    }
+
+    public void stopLoop() {
+        this.working = false;
+        socket.close();
+        executorService.shutdown();
     }
 
     /**
@@ -39,7 +47,7 @@ public class MulticastDispatcher extends Thread {
      */
     @Override
     public void run() {
-        while (true) {
+        while (this.working) {
             final DatagramPacket packet = new DatagramPacket(buf, buf.length);
             try {
                 socket.receive(packet);

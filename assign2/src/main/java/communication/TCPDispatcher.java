@@ -18,16 +18,29 @@ public class TCPDispatcher extends Thread {
     private final ExecutorService executorService;
     private final Node node;
     private final ServerSocket serverSocket; // Passive socket for listening to messages
+    private boolean working;
 
     public TCPDispatcher(final int port, final Node node) throws IOException {
         this.executorService = Executors.newCachedThreadPool();
         this.node = node;
         this.serverSocket = new ServerSocket(port);
+        this.working = true;
+    }
+
+    public void stopLoop() {
+        this.working = false;
+        try {
+            serverSocket.close();
+        } catch (IOException e) {
+            System.out.println("Error closing TCP Socket: " + e.getMessage());
+            e.printStackTrace();
+        }
+        executorService.shutdown();
     }
 
     @Override
     public void run() {
-        while (true) {
+        while (working) {
             try {
                 final Socket socket = serverSocket.accept();
 
