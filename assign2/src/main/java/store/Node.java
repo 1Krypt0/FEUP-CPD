@@ -102,7 +102,6 @@ public class Node {
                     .collect(Collectors.toList());
             clusterIDs = Utils.getListUnion(clusterIDs, clusterMembers);
             System.out.println("The updated cluster members are " + clusterIDs.toString());
-            System.out.println("The body is " + body);
             this.logManager.writeToLog(body);
         }
     }
