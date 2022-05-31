@@ -10,13 +10,14 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.Principal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 public class LogManager {
 
-    private static final String logsDir = "/../../logs/";
+    private static final String logsDir = "/../logs/";
     private final String logFile;
 
     public LogManager(int nodeID) {
@@ -35,6 +36,8 @@ public class LogManager {
     }
 
     public void writeToLog(String logMessage) {
+        // TODO: Check for repeated messages. Add method to check if message already
+        // exists
         try {
             FileWriter fileWriter = new FileWriter(this.logFile, true);
             BufferedWriter writer = new BufferedWriter(fileWriter);
@@ -50,9 +53,7 @@ public class LogManager {
     public List<String> get32MostRecentLogMessages() {
         List<String> log = getLog();
         Collections.reverse(log);
-
-        return log.subList(0, 32);
-
+        return log.subList(0, log.size() < 32 ? log.size() : 32);
     }
 
     public List<String> getLog() {
