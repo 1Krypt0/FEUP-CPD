@@ -1,37 +1,37 @@
 package communication.messages;
 
 import store.Node;
+import utils.Utils;
 
 public abstract class Message {
-    private static final String CRLF = "\r\n";
-
     public abstract void handleMessage();
 
-    public static Message parseMessage(byte[] msg, Node node) {
 
-        System.out.println("Message is " + msg.toString());
+    public static Message parseMessage(byte[] messageData, Store store) {
+        int headerEndIdx = Utils.findHeaderEnd(messageData);
+        if (headerEndIdx == -1) {
+            return null;
+        }
+        String[] messageHeaders = new String(Arrays.copyOf(messageData, headerEndIdx + 1)).split(Utils.CRLF);
 
-        String messageType = separateHeader(msg)[0];
+        byte[] messageBody = Arrays.copyOfRange(messageData, headerEndIdx + 5, messageData.length);
 
-        switch (messageType) {
+        switch (messageHeaders[0]) {
         case "JOIN":
-            System.out.println("This is a JOIN message");
             return new JoinMessage();
         case "LEAVE":
-            System.out.println("This is a LEAVE message");
             return new LeaveMessage();
         case "MEMBERSHIP":
-            System.out.println("This is a MEMBERSHIP message");
             return new MembershipMessage();
+        case "PUT":
+            return new PutMessage(messageBody, store);
+        case "GET":
+            return new GetMessage(messageBody, store);
+        case "DELETE":
+            return new DeleteMessage(messageBody, store);
         default:
             break;
         }
         return null;
-    }
-
-    private static String[] separateHeader(byte[] msg) {
-        String[] message = new String(msg).split(CRLF + CRLF);
-        String[] messageHeader = message[0].split(CRLF);
-        return messageHeader;
     }
 }

@@ -49,7 +49,8 @@ public class MulticastDispatcher extends Thread {
                 executorService.submit(new MessageParser(packet.getData(), node));
             } catch (final IOException e) {
                 System.out.println("Error receiving multicast packet: " + e.getMessage());
-                e.printStackTrace();
+
+                executorService.submit(new MessageHandler(packet.getData(), store));
             }
         }
     }
