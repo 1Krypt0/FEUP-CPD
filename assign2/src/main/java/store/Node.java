@@ -96,22 +96,32 @@ public class Node {
 
     public void receiveMembershipMessage(int senderID, String members, String body) {
         if (senderID == this.nodeID) {
-            System.out.println("This MEMBERSHIP Message came from myself, ignoring");
         } else {
             this.receivedMembershipMessages++;
-            System.out.println("Handling membership message");
-            this.logManager.writeToLog("This is amazing");
+            List<Integer> clusterMembers = Arrays.stream(members.split("-")).map(s -> Integer.parseInt(s))
+                    .collect(Collectors.toList());
+            clusterIDs = Utils.getListUnion(clusterIDs, clusterMembers);
+            System.out.println("The updated cluster members are " + clusterIDs.toString());
+            System.out.println("The body is " + body);
+            this.logManager.writeToLog(body);
         }
     }
 
     public void receiveJoinMessage(int senderID, int membershipCounter, String senderIP, int senderPort) {
         if (senderID == nodeID) {
-            System.out.println("This message came from me, I will ignore it");
         } else {
-            System.out.println("This message came from node " + senderID + " who has membership of " + membershipCounter
-                    + " and a port of " + senderPort);
-            // TODO: Change to appropriate IP when it is available
-            sendMembershipMessage(senderIP, senderPort);
+            if (!clusterIDs.contains(senderID)) {
+                // Update internal cluster state
+                this.clusterIDs.add(senderID);
+                this.clusterIPs.put(senderID, senderIP);
+                this.clusterPorts.put(senderID, senderPort);
+
+                // Add to log events
+                String logMessage = new Date().toString() + " " + Integer.toString(senderID) + " JOIN "
+                        + Integer.toString(membershipCounter);
+                this.logManager.writeToLog(logMessage);
+                sendMembershipMessage(senderIP, senderPort);
+            }
         }
     }
 
