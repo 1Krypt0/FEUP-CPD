@@ -9,7 +9,6 @@ import utils.Utils;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -80,8 +79,7 @@ public class Node {
     public void enterCluster() {
         this.membershipCounter++;
         int sentJoinMessages = 0;
-        String logMessage = new Date().toString() + " " + Integer.toString(this.nodeID) + " JOIN "
-                + Integer.toString(membershipCounter);
+        String logMessage = Integer.toString(this.nodeID) + " JOIN " + Integer.toString(membershipCounter) + "\n";
         logManager.writeToLog(logMessage);
         while (sentJoinMessages != 3) {
             sendJoinMessage();
@@ -119,8 +117,7 @@ public class Node {
                 this.clusterPorts.put(senderID, senderPort);
 
                 // Add to log events
-                String logMessage = new Date().toString() + " " + Integer.toString(senderID) + " JOIN "
-                        + Integer.toString(membershipCounter);
+                String logMessage = Integer.toString(senderID) + " JOIN " + Integer.toString(membershipCounter) + "\n";
                 this.logManager.writeToLog(logMessage);
                 sendMembershipMessage(senderIP, senderPort);
             }
