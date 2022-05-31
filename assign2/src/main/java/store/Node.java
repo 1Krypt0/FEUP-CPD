@@ -120,12 +120,26 @@ public class Node {
     private void sendJoinMessage() {
         final byte[] msg = JoinMessage.composeMessage(this.nodeID, this.membershipCounter, "localhost", this.tcpPort);
         this.multicastDispatcher.sendMessage(msg);
-        System.out.println("Sent a join message with contents " + new String(msg));
+        System.out.println("Sent a JOIN message with contents " + new String(msg));
     }
 
     private void sendMembershipMessage(String destinationIP, int destinationPort) {
-        // TODO: Change to proper data
-        final byte[] msg = MembershipMessage.composeMessage(this.nodeID, "members", "Important log Data");
+        final List<String> recent32LogEvents = logManager.get32MostRecentLogMessages();
+        String logEvents = "";
+        String clusterMembers = "";
+
+        for (String event : recent32LogEvents) {
+            logEvents += event + "\n";
+        }
+
+        for (int id : clusterIDs) {
+            clusterMembers += Integer.toString(id) + "-";
+        }
+
+        clusterMembers = clusterMembers.substring(0, clusterMembers.length() - 1);
+
+        final byte[] msg = MembershipMessage.composeMessage(this.nodeID, clusterMembers, logEvents);
+        System.out.println("Sent a MEMBERSHIP message with contents " + new String(msg));
         this.tcpDispatcher.sendMessage(msg, destinationIP, destinationPort);
     }
 }
