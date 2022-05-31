@@ -62,7 +62,6 @@ public class LogManager {
             BufferedReader reader = new BufferedReader(new FileReader(logFile));
             String buf;
             while ((buf = reader.readLine()) != null) {
-                System.out.println("Log line is: " + buf);
                 log.add(buf);
             }
             reader.close();

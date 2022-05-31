@@ -39,12 +39,10 @@ public class MulticastDispatcher extends Thread {
      */
     @Override
     public void run() {
-        System.out.println("Multicast dispatcher is now running");
         while (true) {
             final DatagramPacket packet = new DatagramPacket(buf, buf.length);
             try {
                 socket.receive(packet);
-                System.out.println("Multicast Dispatcher Received a Message!");
                 executorService.submit(new MessageParser(packet.getData(), node));
             } catch (final IOException e) {
                 System.out.println("Error receiving multicast packet: " + e.getMessage());

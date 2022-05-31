@@ -13,23 +13,16 @@ public abstract class Message {
 
         String[] messageHeader = separateHeader(msg);
         String messageBody = separateBody(msg);
-        System.out.println("The message body is " + messageBody);
         String messageType = messageHeader[0];
-
-        System.out.println("The message is of type " + messageType);
 
         switch (messageType) {
         case "JOIN":
-            System.out.println("This is a JOIN message");
             return new JoinMessage(messageHeader, node);
         case "LEAVE":
-            System.out.println("This is a LEAVE message");
             return new LeaveMessage();
         case "MEMBERSHIP":
-            System.out.println("This is a MEMBERSHIP message");
             return new MembershipMessage(node, messageHeader, messageBody);
         case "ELECTION":
-            System.out.println("This is an ELECTION message");
             return new ElectionMessage();
         default:
             break;
@@ -45,7 +38,6 @@ public abstract class Message {
 
     private static String separateBody(byte[] msg) {
         String[] message = new String(msg).split(CRLF + CRLF);
-        System.out.println("The message in separateBody is " + Arrays.toString(message));
         String messageBody = message.length == 1 ? "" : message[1];
         return messageBody;
     }

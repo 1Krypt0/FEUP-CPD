@@ -18,11 +18,6 @@ public class JoinMessage extends Message {
         int membershipCounter = Integer.parseInt(this.header[2].split(":")[1]);
         int port = Integer.parseInt(this.header[3].split(":")[1]);
         String ip = this.header[4].trim().split(":")[1];
-        System.out.println("HANDLING JOIN");
-        System.out.println("Sender ID is " + senderID);
-        System.out.println("Membershup counter is " + membershipCounter);
-        System.out.println("Port is " + port);
-        System.out.println("IP is " + ip);
         node.receiveJoinMessage(senderID, membershipCounter, ip, port);
     }
 

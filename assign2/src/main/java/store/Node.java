@@ -74,17 +74,9 @@ public class Node {
         tcpThread.start();
     }
 
-    // JOIN FLOW
-    // Send join message
-    // Await for 3 membership messages
-    // If after 3 seconds he doesnt receive 3, retransmit join
-    // When it receives 3 messages, update log
-    // If it doesn't receive 3, stop and don't update log
-    //
     public void enterCluster() {
         this.membershipCounter++;
         int sentJoinMessages = 0;
-        System.out.println("My membership counter is " + membershipCounter);
         while (sentJoinMessages != 3) {
             sendJoinMessage();
             sentJoinMessages++;

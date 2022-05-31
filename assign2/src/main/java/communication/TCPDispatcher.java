@@ -27,7 +27,6 @@ public class TCPDispatcher extends Thread {
 
     @Override
     public void run() {
-        System.out.println("TCP Dispatcher is now running");
         while (true) {
             try {
                 final Socket socket = serverSocket.accept();
@@ -37,8 +36,6 @@ public class TCPDispatcher extends Thread {
                 final byte[] msg = stream.readAllBytes();
 
                 String message = new String(msg);
-
-                System.out.println("Received TCP message with contents: " + message);
 
                 executorService.submit(new MessageParser(msg, node));
 
