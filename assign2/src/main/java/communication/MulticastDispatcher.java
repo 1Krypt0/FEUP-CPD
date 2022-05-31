@@ -28,6 +28,7 @@ public class MulticastDispatcher extends Thread {
         this.node = node;
         this.buf = new byte[512];
         this.socket = new MulticastSocket(port);
+        this.socket.setSoTimeout(1000);
         this.address = new InetSocketAddress(ip, port);
         this.ip = ip;
         this.port = port;
@@ -38,8 +39,6 @@ public class MulticastDispatcher extends Thread {
 
     public void stopLoop() {
         this.working = false;
-        socket.close();
-        executorService.shutdown();
     }
 
     /**
@@ -53,10 +52,10 @@ public class MulticastDispatcher extends Thread {
                 socket.receive(packet);
                 executorService.submit(new MessageParser(packet.getData(), node));
             } catch (final IOException e) {
-                System.out.println("Error receiving multicast packet: " + e.getMessage());
-                e.printStackTrace();
+                System.out.println("Error with multicast socket. Or just timed out");
             }
         }
+        System.out.println("Multicast socket shutting down");
     }
 
     public void sendMessage(final byte[] msg) {

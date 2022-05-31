@@ -7,6 +7,7 @@ import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -24,18 +25,12 @@ public class TCPDispatcher extends Thread {
         this.executorService = Executors.newCachedThreadPool();
         this.node = node;
         this.serverSocket = new ServerSocket(port);
+        this.serverSocket.setSoTimeout(10000);
         this.working = true;
     }
 
     public void stopLoop() {
         this.working = false;
-        try {
-            serverSocket.close();
-        } catch (IOException e) {
-            System.out.println("Error closing TCP Socket: " + e.getMessage());
-            e.printStackTrace();
-        }
-        executorService.shutdown();
     }
 
     @Override
@@ -51,10 +46,10 @@ public class TCPDispatcher extends Thread {
                 executorService.submit(new MessageParser(msg, node));
 
             } catch (final IOException e) {
-                System.out.println("Error reading TCP message: " + e.getMessage());
-                e.printStackTrace();
+                System.out.println("Error with TCP socket. Or just timed out");
             }
         }
+        System.out.println("TCP socket shutting down");
     }
 
     public void sendMessage(final byte[] msg, final String destinationIP, final int destinationPort) {

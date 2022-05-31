@@ -39,6 +39,18 @@ public class Node {
                 try {
                     node.initDispatchers(args);
                     node.enterCluster();
+
+                    final long start = System.currentTimeMillis();
+                    int timeElapsed = 0;
+                    while (timeElapsed < 9) {
+                        final long timeAfter = System.currentTimeMillis();
+                        timeElapsed = (int) ((timeAfter - start) / 1000);
+                    }
+
+                    System.out.println("TIMES UP");
+
+                    node.leaveCluster();
+
                 } catch (final NumberFormatException e) {
                     e.printStackTrace();
                 } catch (final IOException e) {
