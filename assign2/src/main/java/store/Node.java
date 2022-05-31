@@ -4,7 +4,6 @@ import communication.MulticastDispatcher;
 import communication.TCPDispatcher;
 import communication.messages.JoinMessage;
 import communication.messages.MembershipMessage;
-import communication.messages.Message;
 import utils.Utils;
 
 import java.io.IOException;
@@ -36,6 +35,15 @@ public class Node {
         } else {
             try {
                 final Node node = new Node(args);
+
+                try {
+                    node.initDispatchers(args);
+                    node.enterCluster();
+                } catch (NumberFormatException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             } catch (NumberFormatException e) {
                 e.printStackTrace();
             }
@@ -56,15 +64,6 @@ public class Node {
         this.clusterIDs.add(this.nodeID);
 
         this.logManager = new LogManager(this.nodeID);
-
-        try {
-            this.initDispatchers(args);
-            this.enterCluster();
-        } catch (NumberFormatException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
 
     }
 

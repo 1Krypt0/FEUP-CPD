@@ -1,7 +1,5 @@
 package communication.messages;
 
-import java.util.Arrays;
-
 import store.Node;
 
 public abstract class Message {

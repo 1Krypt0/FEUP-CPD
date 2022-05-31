@@ -35,8 +35,6 @@ public class TCPDispatcher extends Thread {
 
                 final byte[] msg = stream.readAllBytes();
 
-                String message = new String(msg);
-
                 executorService.submit(new MessageParser(msg, node));
 
             } catch (final IOException e) {
