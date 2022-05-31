@@ -80,6 +80,9 @@ public class Node {
     public void enterCluster() {
         this.membershipCounter++;
         int sentJoinMessages = 0;
+        String logMessage = new Date().toString() + " " + Integer.toString(this.nodeID) + " JOIN "
+                + Integer.toString(membershipCounter);
+        logManager.writeToLog(logMessage);
         while (sentJoinMessages != 3) {
             sendJoinMessage();
             sentJoinMessages++;
