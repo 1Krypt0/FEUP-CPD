@@ -7,7 +7,7 @@ public class JoinMessage extends Message {
     private final String[] header;
     private final Node node;
 
-    public JoinMessage(String[] header, Node node) {
+    public JoinMessage(Node node, String[] header) {
         this.header = header;
         this.node = node;
     }

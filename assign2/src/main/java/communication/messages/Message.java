@@ -15,9 +15,9 @@ public abstract class Message {
 
         switch (messageType) {
         case "JOIN":
-            return new JoinMessage(messageHeader, node);
+            return new JoinMessage(node, messageHeader);
         case "LEAVE":
-            return new LeaveMessage();
+            return new LeaveMessage(node, messageHeader);
         case "MEMBERSHIP":
             return new MembershipMessage(node, messageHeader, messageBody);
         case "ELECTION":
