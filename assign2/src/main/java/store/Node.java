@@ -28,7 +28,7 @@ public class Node {
     private MulticastDispatcher multicastDispatcher;
     private TCPDispatcher tcpDispatcher;
 
-    public static void main(String[] args) throws InterruptedException {
+    public static void main(final String[] args) throws InterruptedException {
         if (args.length != 4) {
             System.out.println("Usage: java Store <IP_mcast_addr> <IP_mcast_port> <node_id>  <Store_port>");
         } else {
@@ -38,18 +38,18 @@ public class Node {
                 try {
                     node.initDispatchers(args);
                     node.enterCluster();
-                } catch (NumberFormatException e) {
+                } catch (final NumberFormatException e) {
                     e.printStackTrace();
-                } catch (IOException e) {
+                } catch (final IOException e) {
                     e.printStackTrace();
                 }
-            } catch (NumberFormatException e) {
+            } catch (final NumberFormatException e) {
                 e.printStackTrace();
             }
         }
     }
 
-    public Node(String[] args) {
+    public Node(final String[] args) {
 
         this.membershipCounter = -1;
         this.receivedMembershipMessages = 0;
@@ -66,7 +66,7 @@ public class Node {
 
     }
 
-    public void initDispatchers(String[] args) throws NumberFormatException, IOException {
+    public void initDispatchers(final String[] args) throws NumberFormatException, IOException {
         this.multicastDispatcher = new MulticastDispatcher(args[0], Integer.parseInt(args[1]), this);
         final Thread multicastThread = new Thread(this.multicastDispatcher);
         multicastThread.start();
@@ -79,26 +79,26 @@ public class Node {
     public void enterCluster() {
         this.membershipCounter++;
         int sentJoinMessages = 0;
-        String logMessage = Integer.toString(this.nodeID) + " JOIN " + Integer.toString(membershipCounter) + "\n";
+        final String logMessage = Integer.toString(this.nodeID) + " JOIN " + Integer.toString(membershipCounter) + "\n";
         logManager.writeToLog(logMessage);
         while (sentJoinMessages != 3) {
             sendJoinMessage();
             sentJoinMessages++;
             int timeElapsed = 0;
-            long start = System.currentTimeMillis();
+            final long start = System.currentTimeMillis();
             // Waiting for handleMembership to receive messages
             while (this.receivedMembershipMessages < 3 && timeElapsed < 3) {
-                long timeAfter = System.currentTimeMillis();
+                final long timeAfter = System.currentTimeMillis();
                 timeElapsed = (int) ((timeAfter - start) / 1000);
             }
         }
     }
 
-    public void receiveMembershipMessage(int senderID, String members, String body) {
+    public void receiveMembershipMessage(final int senderID, final String members, final String body) {
         if (senderID == this.nodeID) {
         } else {
             this.receivedMembershipMessages++;
-            List<Integer> clusterMembers = Arrays.stream(members.split("-")).map(s -> Integer.parseInt(s))
+            final List<Integer> clusterMembers = Arrays.stream(members.split("-")).map(s -> Integer.parseInt(s))
                     .collect(Collectors.toList());
             clusterIDs = Utils.getListUnion(clusterIDs, clusterMembers);
             System.out.println("The updated cluster members are " + clusterIDs.toString());
@@ -106,7 +106,8 @@ public class Node {
         }
     }
 
-    public void receiveJoinMessage(int senderID, int membershipCounter, String senderIP, int senderPort) {
+    public void receiveJoinMessage(final int senderID, final int membershipCounter, final String senderIP,
+            final int senderPort) {
         if (senderID == nodeID) {
         } else {
             if (!clusterIDs.contains(senderID)) {
@@ -116,7 +117,8 @@ public class Node {
                 this.clusterPorts.put(senderID, senderPort);
 
                 // Add to log events
-                String logMessage = Integer.toString(senderID) + " JOIN " + Integer.toString(membershipCounter) + "\n";
+                final String logMessage = Integer.toString(senderID) + " JOIN " + Integer.toString(membershipCounter)
+                        + "\n";
                 this.logManager.writeToLog(logMessage);
                 sendMembershipMessage(senderIP, senderPort);
             }
@@ -131,16 +133,16 @@ public class Node {
         System.out.println("Sent a JOIN message with contents " + new String(msg));
     }
 
-    private void sendMembershipMessage(String destinationIP, int destinationPort) {
+    private void sendMembershipMessage(final String destinationIP, final int destinationPort) {
         final List<String> recent32LogEvents = logManager.get32MostRecentLogMessages();
         String logEvents = "";
         String clusterMembers = "";
 
-        for (String event : recent32LogEvents) {
+        for (final String event : recent32LogEvents) {
             logEvents += event + "\n";
         }
 
-        for (int id : clusterIDs) {
+        for (final int id : clusterIDs) {
             clusterMembers += Integer.toString(id) + "-";
         }
 

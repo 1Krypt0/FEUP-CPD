@@ -11,52 +11,46 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
-
-import communication.messages.Message;
 
 public class LogManager {
 
     private static final String logsDir = "/../logs/";
     private final String logFile;
 
-    public LogManager(int nodeID) {
-        String localDir = System.getProperty("user.dir");
-        String logDir = localDir + logsDir + nodeID;
+    public LogManager(final int nodeID) {
+        final String localDir = System.getProperty("user.dir");
+        final String logDir = localDir + logsDir + nodeID;
 
-        Path logPath = Paths.get(logDir);
+        final Path logPath = Paths.get(logDir);
         try {
             Files.createDirectories(logPath);
-        } catch (IOException e) {
+        } catch (final IOException e) {
             System.out.println("Error creating log directory: " + e.getMessage());
             e.printStackTrace();
         }
 
         this.logFile = localDir + logsDir + nodeID + "/log.txt";
-        File file = new File(this.logFile);
+        final File file = new File(this.logFile);
         try {
             file.createNewFile();
-        } catch (IOException e) {
+        } catch (final IOException e) {
             System.out.println("Error creating log file: " + e.getMessage());
             e.printStackTrace();
         }
     }
 
-    public void writeToLog(String logMessage) {
-        // TODO: Check for repeated messages. Add method to check if message already
-        // exists
-        List<String> recentLogEntries = get32MostRecentLogMessages();
-        String[] individualLogMessages = logMessage.split("\n");
-        for (String individualMessage : individualLogMessages) {
+    public void writeToLog(final String logMessage) {
+        final List<String> recentLogEntries = get32MostRecentLogMessages();
+        final String[] individualLogMessages = logMessage.split("\n");
+        for (final String individualMessage : individualLogMessages) {
             if (!recentLogEntries.contains(individualMessage)) {
                 try {
-                    FileWriter fileWriter = new FileWriter(this.logFile, true);
-                    BufferedWriter writer = new BufferedWriter(fileWriter);
+                    final FileWriter fileWriter = new FileWriter(this.logFile, true);
+                    final BufferedWriter writer = new BufferedWriter(fileWriter);
                     writer.write(individualMessage + "\n");
                     writer.close();
-                } catch (IOException e) {
+                } catch (final IOException e) {
                     System.out.println("Error writing to file: " + e.getMessage());
                     e.printStackTrace();
                 }
@@ -67,11 +61,11 @@ public class LogManager {
     }
 
     public List<String> get32MostRecentLogMessages() {
-        File logFile = new File(this.logFile);
-        List<String> log = new ArrayList<>();
+        final File logFile = new File(this.logFile);
+        final List<String> log = new ArrayList<>();
         int counter = 0;
         try {
-            BufferedReader reader = new BufferedReader(new FileReader(logFile));
+            final BufferedReader reader = new BufferedReader(new FileReader(logFile));
             String buf;
             while ((buf = reader.readLine()) != null && counter < 32) {
                 log.add(buf);
@@ -79,10 +73,10 @@ public class LogManager {
             }
             reader.close();
             return log;
-        } catch (FileNotFoundException e) {
+        } catch (final FileNotFoundException e) {
             System.out.println("Error reading log File: " + e.getMessage());
             e.printStackTrace();
-        } catch (IOException e) {
+        } catch (final IOException e) {
             System.out.println("Error closing log File: " + e.getMessage());
             e.printStackTrace();
         }
@@ -90,20 +84,20 @@ public class LogManager {
     }
 
     public List<String> getLog() {
-        File logFile = new File(this.logFile);
-        List<String> log = new ArrayList<>();
+        final File logFile = new File(this.logFile);
+        final List<String> log = new ArrayList<>();
         try {
-            BufferedReader reader = new BufferedReader(new FileReader(logFile));
+            final BufferedReader reader = new BufferedReader(new FileReader(logFile));
             String buf;
             while ((buf = reader.readLine()) != null) {
                 log.add(buf);
             }
             reader.close();
             return log;
-        } catch (FileNotFoundException e) {
+        } catch (final FileNotFoundException e) {
             System.out.println("Error reading log File: " + e.getMessage());
             e.printStackTrace();
-        } catch (IOException e) {
+        } catch (final IOException e) {
             System.out.println("Error closing log File: " + e.getMessage());
             e.printStackTrace();
         }
