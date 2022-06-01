@@ -131,6 +131,7 @@ public class Node {
         sendLeaveMessage();
         this.multicastDispatcher.stopLoop();
         this.tcpDispatcher.stopLoop();
+        this.periodicSender.stopLoop();
     }
 
     public void receiveMembershipMessage(final int senderID, final String members, final String body) {

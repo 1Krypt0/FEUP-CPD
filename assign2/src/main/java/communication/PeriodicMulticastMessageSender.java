@@ -17,6 +17,10 @@ public class PeriodicMulticastMessageSender {
         this.node = node;
     }
 
+    public void stopLoop() {
+        this.scheduledExecutorService.shutdownNow();
+    }
+
     public void updateMembershipPeriodically() {
         scheduledExecutorService.scheduleWithFixedDelay(new Runnable() {
             @Override
