@@ -149,7 +149,11 @@ public class Node {
     }
 
     public void receiveLeaveMessage(int senderID, int membershipCounter) {
-
+        final String logMessage = Integer.toString(senderID) + " LEAVE " + Integer.toString(membershipCounter) + "\n";
+        this.logManager.writeToLog(logMessage);
+        this.clusterIDs.remove(senderID);
+        this.clusterIPs.remove(senderID);
+        this.clusterPorts.remove(senderID);
     }
 
     // NOTE: For now, the destination IP is localhost because we are not sure if the
