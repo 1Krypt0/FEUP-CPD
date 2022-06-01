@@ -22,8 +22,4 @@ public class LeaveMessage extends Message {
     public static byte[] composeMessage(int nodeID, int membershipCounter) {
         return ("LEAVE id:" + nodeID + " membership:" + membershipCounter).getBytes();
     }
-
-    public static byte[] composeMessage() {
-        return null;
-    }
 }

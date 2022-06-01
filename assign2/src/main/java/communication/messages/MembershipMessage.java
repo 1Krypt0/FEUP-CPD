@@ -25,8 +25,4 @@ public class MembershipMessage extends Message {
         return ("MEMBERSHIP id:" + id + " members:" + members + Message.CRLF + Message.CRLF + logData).getBytes();
     }
 
-    public static byte[] composeMessage() {
-        return null;
-    }
-
 }
