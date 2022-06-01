@@ -52,7 +52,9 @@ public class Node {
 
                     System.out.println("TIMES UP");
 
-                    node.leaveCluster();
+                    if (node.getID().equals(1)) {
+                        node.leaveCluster();
+                    }
 
                 } catch (final NumberFormatException e) {
                     e.printStackTrace();
