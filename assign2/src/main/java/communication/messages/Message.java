@@ -36,7 +36,7 @@ public abstract class Message {
 
     private static String separateBody(byte[] msg) {
         String[] message = new String(msg).split(CRLF + CRLF);
-        String messageBody = message.length == 1 ? "" : message[1];
+        String messageBody = message.length == 1 ? "" : message[1].trim();
         return messageBody;
     }
 }
