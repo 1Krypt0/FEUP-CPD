@@ -33,12 +33,37 @@ public class MembershipCounterManager {
         try {
             file.createNewFile();
         } catch (final IOException e) {
-            System.out.println("Error creating log file: " + e.getMessage());
+            System.out.println("Error creating counter file: " + e.getMessage());
             e.printStackTrace();
         }
 
-        final int counter = -1;
-        writeCounter(counter);
+        if (!this.hasContents()) {
+            final int counter = -1;
+            writeCounter(counter);
+        }
+    }
+
+    private boolean hasContents() {
+        try {
+            final BufferedReader reader = new BufferedReader(new FileReader(counterFile));
+            boolean hasContents;
+            String buf;
+            buf = reader.readLine();
+            if (buf != null) {
+                hasContents = true;
+            } else {
+                hasContents = false;
+            }
+            reader.close();
+            return hasContents;
+        } catch (final FileNotFoundException e) {
+            System.out.println("Error reading membership File: " + e.getMessage());
+            e.printStackTrace();
+        } catch (final IOException e) {
+            System.out.println("Error closing membership File: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return false;
     }
 
     public void writeCounter(int value) {
@@ -61,9 +86,9 @@ public class MembershipCounterManager {
 
     public int getMembershipCounter() {
         String membershipCounter = "";
-        final File logFile = new File(this.counterFile);
+        final File counterFile = new File(this.counterFile);
         try {
-            final BufferedReader reader = new BufferedReader(new FileReader(logFile));
+            final BufferedReader reader = new BufferedReader(new FileReader(counterFile));
             String buf;
             while ((buf = reader.readLine()) != null) {
                 membershipCounter += buf;
