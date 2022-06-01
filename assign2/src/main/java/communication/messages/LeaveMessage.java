@@ -23,4 +23,7 @@ public class LeaveMessage extends Message {
         return ("LEAVE id:" + nodeID + " membership:" + membershipCounter).getBytes();
     }
 
+    public static byte[] composeMessage() {
+        return null;
+    }
 }

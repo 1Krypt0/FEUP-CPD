@@ -10,6 +10,7 @@ public class JoinMessage extends Message {
     public JoinMessage(Node node, String[] header) {
         this.header = header;
         this.node = node;
+
     }
 
     @Override
@@ -19,6 +20,7 @@ public class JoinMessage extends Message {
         int port = Integer.parseInt(this.header[3].split(":")[1]);
         String ip = this.header[4].trim().split(":")[1];
         node.receiveJoinMessage(senderID, membershipCounter, ip, port);
+
     }
 
     public static byte[] composeMessage(int id, int membershipCounter, String ip, int port) {

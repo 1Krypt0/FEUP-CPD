@@ -3,6 +3,9 @@ package communication.messages;
 import store.Node;
 
 public class MembershipMessage extends Message {
+    public MembershipMessage() {
+        super();
+    }
 
     private final Node node;
     private final String[] header;
@@ -23,6 +26,10 @@ public class MembershipMessage extends Message {
 
     public static byte[] composeMessage(int id, String members, String logData) {
         return ("MEMBERSHIP id:" + id + " members:" + members + Message.CRLF + Message.CRLF + logData).getBytes();
+    }
+
+    public static byte[] composeMessage() {
+        return null;
     }
 
 }
