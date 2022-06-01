@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 public class Node {
     private final int nodeID;
     private final int tcpPort;
-    private int membershipCounter;
+    private final MembershipCounterManager membershipCounterManager;
     private int receivedMembershipMessages;
 
     private final LogManager logManager;
@@ -64,10 +64,11 @@ public class Node {
 
     public Node(final String[] args) {
 
-        this.membershipCounter = -1;
         this.receivedMembershipMessages = 0;
         this.nodeID = Integer.parseInt(args[2]);
         this.tcpPort = Integer.parseInt(args[3]);
+
+        this.membershipCounterManager = new MembershipCounterManager(this.nodeID);
 
         this.clusterIPs = new HashMap<Integer, String>();
         this.clusterPorts = new HashMap<Integer, Integer>();
@@ -90,9 +91,10 @@ public class Node {
     }
 
     public void enterCluster() {
-        this.membershipCounter++;
+        this.membershipCounterManager.incrementMembershipCounter();
         int sentJoinMessages = 0;
-        final String logMessage = Integer.toString(this.nodeID) + " JOIN " + Integer.toString(membershipCounter) + "\n";
+        final String logMessage = Integer.toString(this.nodeID) + " JOIN "
+                + Integer.toString(membershipCounterManager.getMembershipCounter()) + "\n";
         logManager.writeToLog(logMessage);
         while (sentJoinMessages != 3) {
             sendJoinMessage();
@@ -108,9 +110,9 @@ public class Node {
     }
 
     public void leaveCluster() {
-        this.membershipCounter++;
-        final String logMessage = Integer.toString(this.nodeID) + " LEAVE " + Integer.toString(membershipCounter)
-                + "\n";
+        this.membershipCounterManager.incrementMembershipCounter();
+        final String logMessage = Integer.toString(this.nodeID) + " LEAVE "
+                + Integer.toString(membershipCounterManager.getMembershipCounter()) + "\n";
         logManager.writeToLog(logMessage);
         sendLeaveMessage();
         this.multicastDispatcher.stopLoop();
@@ -160,13 +162,14 @@ public class Node {
     // NOTE: For now, the destination IP is localhost because we are not sure if the
     // ID will be the same as the ip
     private void sendJoinMessage() {
-        final byte[] msg = JoinMessage.composeMessage(this.nodeID, this.membershipCounter, "localhost", this.tcpPort);
+        final byte[] msg = JoinMessage.composeMessage(this.nodeID, membershipCounterManager.getMembershipCounter(),
+                "localhost", this.tcpPort);
         this.multicastDispatcher.sendMessage(msg);
         System.out.println("Sent a JOIN message with contents " + new String(msg));
     }
 
     private void sendLeaveMessage() {
-        final byte[] msg = LeaveMessage.composeMessage(this.nodeID, this.membershipCounter);
+        final byte[] msg = LeaveMessage.composeMessage(this.nodeID, membershipCounterManager.getMembershipCounter());
         this.multicastDispatcher.sendMessage(msg);
         System.out.println("Sent a LEAVE message with contents " + new String(msg));
     }
