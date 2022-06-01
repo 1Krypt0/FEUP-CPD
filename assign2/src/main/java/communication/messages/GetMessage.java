@@ -1,25 +1,27 @@
 package communication.messages;
 
-import store.Store;
-import utils.Utils;
-
 import java.nio.charset.StandardCharsets;
+
+import store.Node;
 
 public class GetMessage extends Message {
 
-    private final byte[] body;
-    public GetMessage(byte[] messageBody, Store store) {
-        super(store);
+    private final String body;
+    private final Node node;
+
+    public GetMessage(String messageBody, Node node) {
+        this.node = node;
         this.body = messageBody;
     }
 
+    // TODO: Deal with handling the message here
     @Override
     public void handleMessage() {
-        store.get(this.body);
+        node.get(this.body);
     }
 
     public static byte[] composeMessage(String data) {
-        String string = "GET" + Utils.CRLF + Utils.CRLF + data;
+        String string = "GET" + Message.CRLF + Message.CRLF + data;
         return string.getBytes(StandardCharsets.UTF_8);
     }
 }
