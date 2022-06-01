@@ -1,6 +1,7 @@
 package store;
 
 import communication.MulticastDispatcher;
+import communication.PeriodicMulticastMessageSender;
 import communication.TCPDispatcher;
 import communication.messages.JoinMessage;
 import communication.messages.LeaveMessage;
@@ -10,6 +11,7 @@ import utils.Utils;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -28,6 +30,7 @@ public class Node {
 
     private MulticastDispatcher multicastDispatcher;
     private TCPDispatcher tcpDispatcher;
+    private PeriodicMulticastMessageSender periodicSender;
 
     public static void main(final String[] args) throws InterruptedException {
         if (args.length != 4) {
@@ -96,6 +99,9 @@ public class Node {
         this.tcpDispatcher = new TCPDispatcher(this.tcpPort, this);
         final Thread tcpThread = new Thread(this.tcpDispatcher);
         tcpThread.start();
+
+        this.periodicSender = new PeriodicMulticastMessageSender(this);
+        this.periodicSender.updateMembershipPeriodically();
     }
 
     public void enterCluster() {
