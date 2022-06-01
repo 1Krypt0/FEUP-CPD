@@ -62,6 +62,14 @@ public class Node {
         }
     }
 
+    public List<Integer> getClusterIDs() {
+        return this.clusterIDs;
+    }
+
+    public Integer getID() {
+        return this.nodeID;
+    }
+
     public Node(final String[] args) {
 
         this.receivedMembershipMessages = 0;
@@ -193,5 +201,26 @@ public class Node {
         final byte[] msg = MembershipMessage.composeMessage(this.nodeID, clusterMembers, logEvents);
         System.out.println("Sent a MEMBERSHIP message with contents " + new String(msg));
         this.tcpDispatcher.sendMessage(msg, destinationIP, destinationPort);
+    }
+
+    public void sendMulticastMembership() {
+        final List<String> recent32LogEvents = logManager.get32MostRecentLogMessages();
+        String logEvents = "";
+        String clusterMembers = "";
+
+        for (final String event : recent32LogEvents) {
+            logEvents += event + "\n";
+        }
+
+        for (final int id : clusterIDs) {
+            clusterMembers += Integer.toString(id) + "-";
+        }
+
+        logEvents = logEvents.substring(0, logEvents.length() - 1);
+        clusterMembers = clusterMembers.substring(0, clusterMembers.length() - 1);
+
+        final byte[] msg = MembershipMessage.composeMessage(this.nodeID, clusterMembers, logEvents);
+        this.multicastDispatcher.sendMessage(msg);
+        System.out.println("Sent a MEMBERSHIP MULTICAST message with contents " + new String(msg));
     }
 }
