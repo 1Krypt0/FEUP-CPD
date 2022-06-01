@@ -8,12 +8,13 @@ public abstract class Message {
 
     public abstract void handleMessage();
 
-    public static Message parseMessage(byte[] messageData, Store store) {
+    public static Message parseMessage(byte[] msg, Node node) {
 
         String[] messageHeader = separateHeader(msg);
         String messageBody = separateBody(msg);
         String messageType = messageHeader[0];
-        switch (messageHeaders[0]) {
+
+        switch (messageHeader[0]) {
         case "JOIN":
             return new JoinMessage(node, messageHeader);
         case "LEAVE":
@@ -21,11 +22,11 @@ public abstract class Message {
         case "MEMBERSHIP":
             return new MembershipMessage(node, messageHeader, messageBody);
         case "PUT":
-            return new PutMessage(messageBody, store);
+            return new PutMessage(messageBody, node);
         case "GET":
-            return new GetMessage(messageBody, store);
+            return new GetMessage(messageBody, node);
         case "DELETE":
-            return new DeleteMessage(messageBody, store);
+            return new DeleteMessage(messageBody, node);
         default:
             break;
         }
