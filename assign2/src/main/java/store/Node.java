@@ -232,4 +232,17 @@ public class Node {
         this.multicastDispatcher.sendMessage(msg);
         System.out.println("Sent a MEMBERSHIP MULTICAST message with contents " + new String(msg));
     }
+
+    // TODO: Pass actual data, let handlers separate the fields approprietly
+    public void delete(String msg) {
+
+    }
+
+    public void get(String body) {
+
+    }
+
+    public void put(String key, String value) {
+
+    }
 }
