@@ -24,7 +24,7 @@ public class TCPDispatcher extends Thread {
         this.executorService = Executors.newCachedThreadPool();
         this.node = node;
         this.serverSocket = new ServerSocket(port);
-        this.serverSocket.setSoTimeout(10000);
+        this.serverSocket.setSoTimeout(1000);
         this.working = true;
     }
 
