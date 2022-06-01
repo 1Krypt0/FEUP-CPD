@@ -3,9 +3,6 @@ package communication.messages;
 import store.Node;
 
 public class MembershipMessage extends Message {
-    public MembershipMessage() {
-        super();
-    }
 
     private final Node node;
     private final String[] header;

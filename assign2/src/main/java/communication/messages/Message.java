@@ -1,7 +1,6 @@
 package communication.messages;
 
 import store.Node;
-import utils.Utils;
 
 public abstract class Message {
     public static final String CRLF = "\r\n";
@@ -14,7 +13,7 @@ public abstract class Message {
         String messageBody = separateBody(msg);
         String messageType = messageHeader[0];
 
-        switch (messageHeader[0]) {
+        switch (messageType) {
         case "JOIN":
             return new JoinMessage(node, messageHeader);
         case "LEAVE":
