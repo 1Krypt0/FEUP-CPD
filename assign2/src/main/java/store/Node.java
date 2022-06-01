@@ -144,6 +144,7 @@ public class Node {
                         + "\n";
                 this.logManager.writeToLog(logMessage);
                 sendMembershipMessage(senderIP, senderPort);
+                Collections.sort(this.clusterIDs);
             }
         }
     }
