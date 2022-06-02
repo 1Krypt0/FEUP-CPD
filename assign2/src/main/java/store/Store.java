@@ -35,6 +35,8 @@ public class Store implements RMI {
     private final HashMap<String, Integer> clusterPorts;
     private List<String> clusterIDs;
 
+    private final StorageManager storageManager;
+
     private MulticastDispatcher multicastDispatcher;
     private TCPDispatcher tcpDispatcher;
     private PeriodicMulticastMessageSender periodicSender;
@@ -90,6 +92,7 @@ public class Store implements RMI {
 
         this.logManager = new LogManager(this.nodeID);
 
+        this.storageManager = new StorageManager(this.nodeID);
     }
 
     public void initDispatchers(final String[] args) throws IOException {
@@ -275,16 +278,47 @@ public class Store implements RMI {
         }
     }
 
-    // TODO: Pass actual data, let handlers separate the fields approprietly
     public void put(String key, String value) {
-        return null;
+        final String logMessage = this.nodeID + " PUT " + key + " " + value + "\n";
+        this.logManager.writeToLog(logMessage);
+        boolean done = this.storageManager.writeFile(key, value);
+
+        if (done) {
+            System.out.println("Successfully wrote to file");
+            // SEND TO CLIENT SAYING IT WAS SUCCESSFULL
+        } else {
+            System.out.println("Failed to write to file");
+            // SEND TO CLIENT SAYING IT WAS UNSUCCESSFULL
+        }
     }
 
     public void get(String key) {
-        return null;
+        final String logMessage = this.nodeID + " GET " + key + "\n";
+        this.logManager.writeToLog(logMessage);
+        String value = this.storageManager.readFile(key);
+
+        if (value != null) {
+            System.out.println("Successfully read from file");
+            // SEND TO CLIENT SAYING IT WAS SUCCESSFULL WITH DATA
+        } else {
+            System.out.println("Failed to read from file");
+            // DO THINGS SEARCH FOR KEY ON OTHER NODES AND SUCH MAURO PART
+            // SEND TO CLIENT SAYING IT WAS UNSUCCESSFULL IF IT NEVER FINDS IT
+        }
     }
 
     public void delete(String key){
-        return null;
+        final String logMessage = this.nodeID + " DELETE " + key + "\n";
+        this.logManager.writeToLog(logMessage);
+        boolean done = this.storageManager.deleteFile(key);
+
+        if (done) {
+            System.out.println("Successfully deleted from file");
+            // SEND TO CLIENT SAYING IT WAS SUCCESSFULL
+        } else {
+            System.out.println("Failed to delete from file");
+            // DO THINGS SEARCH FOR KEY ON OTHER NODES AND SUCH MAURO PART
+            // SEND TO CLIENT SAYING IT WAS UNSUCCESSFULL IF IT NEVER FINDS IT
+        }
     }
 }
