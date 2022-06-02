@@ -20,7 +20,7 @@ public class PutMessage extends Message {
         // client)
         // node.put(new String(Utils.calculateHash(this.body.getBytes())), this.body);
         // TODO Implement with proper functionality
-        node.put(body);
+        node.put(new String(Utils.calculateHash(this.body.getBytes())), this.body);
 
     }
 

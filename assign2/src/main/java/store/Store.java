@@ -276,7 +276,7 @@ public class Store implements RMI {
     }
 
     // TODO: Pass actual data, let handlers separate the fields approprietly
-    public void put(String fileName) {
+    public void put(String key, String value) {
         return null;
     }
 
