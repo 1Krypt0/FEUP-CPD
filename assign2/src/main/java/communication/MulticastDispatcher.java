@@ -52,7 +52,6 @@ public class MulticastDispatcher extends Thread {
                 socket.receive(packet);
                 executorService.submit(new MessageParser(packet.getData(), node));
             } catch (final IOException e) {
-                System.out.println("Error with multicast socket. Or just timed out");
             }
         }
         System.out.println("Multicast socket shutting down");

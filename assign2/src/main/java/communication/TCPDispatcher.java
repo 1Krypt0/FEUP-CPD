@@ -45,7 +45,6 @@ public class TCPDispatcher extends Thread {
                 executorService.submit(new MessageParser(msg, node));
 
             } catch (final IOException e) {
-                System.out.println("Error with TCP socket. Or just timed out");
             }
         }
         System.out.println("TCP socket shutting down");
