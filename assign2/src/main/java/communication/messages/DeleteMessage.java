@@ -1,15 +1,15 @@
 package communication.messages;
 
-import store.Node;
+import store.Store;
 
 import java.nio.charset.StandardCharsets;
 
 public class DeleteMessage extends Message {
 
     private final String body;
-    private final Node node;
+    private final Store node;
 
-    public DeleteMessage(String messageBody, Node node) {
+    public DeleteMessage(String messageBody, Store node) {
         this.body = messageBody;
         this.node = node;
     }

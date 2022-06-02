@@ -1,15 +1,15 @@
 package communication.messages;
 
-import store.Node;
+import store.Store;
 import utils.Utils;
 
 import java.nio.charset.StandardCharsets;
 
 public class PutMessage extends Message {
     private final String body;
-    private final Node node;
+    private final Store node;
 
-    public PutMessage(String body, Node node) {
+    public PutMessage(String body, Store node) {
         this.body = body;
         this.node = node;
     }

@@ -10,12 +10,12 @@ import java.net.SocketAddress;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import store.Node;
+import store.Store;
 
 public class MulticastDispatcher extends Thread {
 
     private final ExecutorService executorService;
-    private final Node node;
+    private final Store node;
     private final MulticastSocket socket;
     private final byte[] buf;
     private final SocketAddress address;
@@ -23,7 +23,7 @@ public class MulticastDispatcher extends Thread {
     private final String ip;
     private boolean working;
 
-    public MulticastDispatcher(final String ip, final int port, final Node node) throws IOException {
+    public MulticastDispatcher(final String ip, final int port, final Store node) throws IOException {
         this.executorService = Executors.newCachedThreadPool();
         this.node = node;
         this.buf = new byte[512];

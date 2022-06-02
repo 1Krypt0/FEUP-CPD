@@ -5,14 +5,14 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import store.Node;
+import store.Store;
 
 public class PeriodicMulticastMessageSender {
 
     private final ScheduledExecutorService scheduledExecutorService;
-    private final Node node;
+    private final Store node;
 
-    public PeriodicMulticastMessageSender(Node node) {
+    public PeriodicMulticastMessageSender(Store node) {
         this.scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
         this.node = node;
     }

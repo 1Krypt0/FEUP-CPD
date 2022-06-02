@@ -16,7 +16,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class Node {
+public class Store {
     private final int nodeID;
     private final int tcpPort;
     private final MembershipCounterManager membershipCounterManager;
@@ -37,7 +37,7 @@ public class Node {
             System.out.println("Usage: java Store <IP_mcast_addr> <IP_mcast_port> <node_id>  <Store_port>");
         } else {
             try {
-                final Node node = new Node(args);
+                final Store node = new Store(args);
 
                 try {
                     node.initDispatchers(args);
@@ -75,7 +75,7 @@ public class Node {
         return this.nodeID;
     }
 
-    public Node(final String[] args) {
+    public Store(final String[] args) {
 
         this.receivedMembershipMessages = 0;
         this.nodeID = Integer.parseInt(args[2]);

@@ -1,13 +1,13 @@
 package communication.messages;
 
-import store.Node;
+import store.Store;
 
 public class JoinMessage extends Message {
 
     private final String[] header;
-    private final Node node;
+    private final Store node;
 
-    public JoinMessage(Node node, String[] header) {
+    public JoinMessage(Store node, String[] header) {
         this.header = header;
         this.node = node;
 

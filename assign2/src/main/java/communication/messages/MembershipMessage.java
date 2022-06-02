@@ -1,14 +1,14 @@
 package communication.messages;
 
-import store.Node;
+import store.Store;
 
 public class MembershipMessage extends Message {
 
-    private final Node node;
+    private final Store node;
     private final String[] header;
     private final String body;
 
-    public MembershipMessage(Node node, String[] header, String body) {
+    public MembershipMessage(Store node, String[] header, String body) {
         this.node = node;
         this.header = header;
         this.body = body;

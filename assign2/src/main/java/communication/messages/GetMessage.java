@@ -2,14 +2,14 @@ package communication.messages;
 
 import java.nio.charset.StandardCharsets;
 
-import store.Node;
+import store.Store;
 
 public class GetMessage extends Message {
 
     private final String body;
-    private final Node node;
+    private final Store node;
 
-    public GetMessage(String messageBody, Node node) {
+    public GetMessage(String messageBody, Store node) {
         this.node = node;
         this.body = messageBody;
     }

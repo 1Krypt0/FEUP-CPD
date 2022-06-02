@@ -1,13 +1,13 @@
 package communication.messages;
 
-import store.Node;
+import store.Store;
 
 public class LeaveMessage extends Message {
 
-    private final Node node;
+    private final Store node;
     private final String[] header;
 
-    public LeaveMessage(Node node, String[] header) {
+    public LeaveMessage(Store node, String[] header) {
         this.node = node;
         this.header = header;
     }
