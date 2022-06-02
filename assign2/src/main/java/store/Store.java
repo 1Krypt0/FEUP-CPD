@@ -106,13 +106,12 @@ public class Store implements RMI {
         this.periodicSender.updateMembershipPeriodically();
     }
 
-    public void enterCluster() throws UnknownHostException {
+    public int enterCluster() throws UnknownHostException {
 
         int counterValue = this.membershipCounterManager.getMembershipCounter();
-
         if (counterValue % 2 == 0) {
             System.out.println("Node has already joined the cluster");
-            return;
+            return -1;
         }
 
         this.membershipCounterManager.incrementMembershipCounter();
@@ -131,15 +130,17 @@ public class Store implements RMI {
                 timeElapsed = (int) ((timeAfter - start) / 1000);
             }
         }
+
+        return 0;
     }
 
-    public void leaveCluster() {
+    public int leaveCluster() {
 
         int counterValue = this.membershipCounterManager.getMembershipCounter();
 
         if (counterValue % 2 == 1) {
             System.out.println("Node has already left the cluster");
-            return;
+            return -1;
         }
 
         this.membershipCounterManager.incrementMembershipCounter();
@@ -150,6 +151,8 @@ public class Store implements RMI {
         this.periodicSender.stopLoop();
         this.tcpDispatcher.stopLoop();
         this.multicastDispatcher.stopLoop();
+
+        return 0;
     }
 
     public void receiveMembershipMessage(final int senderID, final String members, final String body) {
@@ -252,19 +255,27 @@ public class Store implements RMI {
     @Override
     public String join() throws RemoteException {
         try {
-            this.enterCluster();
+            int res = this.enterCluster();
+            if (res == 0) {
+                return "Node " + this.nodeID + " has joined the cluster";
+            } else {
+                return "Node has already joined the cluster";
+            }
         } catch (UnknownHostException e) {
             System.out.println("Cannot determine localhost");
             e.printStackTrace();
             return "Error: Cannot determine localhost";
         }
-        return "Node " + this.nodeID + " has joined the cluster";
     }
 
     @Override
     public String leave() throws RemoteException {
-        this.leaveCluster();
-        return "Node " + this.nodeID + " has left the cluster";
+        int res = this.leaveCluster();
+        if (res == 0) {
+            return "Node " + this.nodeID + " has left the cluster";
+        } else {
+            return "Node has already left the cluster";
+        }
     }
 
     // TODO: Pass actual data, let handlers separate the fields approprietly
