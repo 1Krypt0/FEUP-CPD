@@ -39,15 +39,12 @@ public class TestClient {
                 break;
             case "PUT":
                 operand = args[2];
-                res = node.put(operand);
                 break;
             case "GET":
                 operand = args[2];
-                res = node.get(operand);
                 break;
             case "DELETE":
                 operand = args[2];
-                res = node.delete(operand);
                 break;
             default:
                 System.out.println("Unknown operation: " + op);

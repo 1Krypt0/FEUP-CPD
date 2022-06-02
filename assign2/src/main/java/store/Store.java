@@ -276,18 +276,15 @@ public class Store implements RMI {
     }
 
     // TODO: Pass actual data, let handlers separate the fields approprietly
-    @Override
-    public String put(String fileName) throws RemoteException {
+    public void put(String fileName) {
         return null;
     }
 
-    @Override
-    public String get(String key) throws RemoteException {
+    public void get(String key) {
         return null;
     }
 
-    @Override
-    public String delete(String key) throws RemoteException {
+    public void delete(String key){
         return null;
     }
 }
