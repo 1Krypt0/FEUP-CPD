@@ -195,7 +195,7 @@ public class Store implements RMI {
     // ID will be the same as the ip
     private void sendJoinMessage() throws UnknownHostException {
         final byte[] msg = JoinMessage.composeMessage(this.nodeID, membershipCounterManager.getMembershipCounter(),
-                InetAddress.getLocalHost().toString(), this.tcpPort);
+                InetAddress.getLocalHost().getHostAddress(), this.tcpPort);
         this.multicastDispatcher.sendMessage(msg);
         System.out.println("Sent a JOIN message with contents " + new String(msg));
     }
