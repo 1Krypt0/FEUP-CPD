@@ -1,11 +1,13 @@
 package communication.messages;
 
+import java.rmi.RemoteException;
+
 import store.Store;
 
 public abstract class Message {
     public static final String CRLF = "\r\n";
 
-    public abstract void handleMessage();
+    public abstract void handleMessage() throws RemoteException;
 
     public static Message parseMessage(byte[] msg, Store node) {
 

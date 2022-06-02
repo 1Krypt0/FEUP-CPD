@@ -3,6 +3,7 @@ package communication.messages;
 import store.Store;
 
 import java.nio.charset.StandardCharsets;
+import java.rmi.RemoteException;
 
 public class DeleteMessage extends Message {
 
@@ -15,7 +16,7 @@ public class DeleteMessage extends Message {
     }
 
     @Override
-    public void handleMessage() {
+    public void handleMessage() throws RemoteException {
         // TODO: Deal with extracting the data here, only pass actual body
         // Check Membership, Join and Delete for Examples
         node.delete(this.body);

@@ -1,6 +1,7 @@
 package communication.messages;
 
 import java.nio.charset.StandardCharsets;
+import java.rmi.RemoteException;
 
 import store.Store;
 
@@ -16,7 +17,7 @@ public class GetMessage extends Message {
 
     // TODO: Deal with handling the message here
     @Override
-    public void handleMessage() {
+    public void handleMessage() throws RemoteException {
         node.get(this.body);
     }
 

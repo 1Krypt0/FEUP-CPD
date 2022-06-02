@@ -1,5 +1,7 @@
 package communication;
 
+import java.rmi.RemoteException;
+
 import communication.messages.Message;
 import store.Store;
 
@@ -20,6 +22,10 @@ public class MessageParser implements Runnable {
     @Override
     public void run() {
         Message message = Message.parseMessage(msg, node);
-        message.handleMessage();
+        try {
+            message.handleMessage();
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
     }
 }
