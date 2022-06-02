@@ -56,20 +56,7 @@ public class Store implements RMI {
 
                 System.out.println("The server is ready");
 
-                // node.enterCluster();
 
-                // final long start = System.currentTimeMillis();
-                // int timeElapsed = 0;
-                // while (timeElapsed < 9) {
-                // final long timeAfter = System.currentTimeMillis();
-                // timeElapsed = (int) ((timeAfter - start) / 1000);
-                // }
-
-                // System.out.println("TIMES UP");
-
-                // if (node.getID().equals(1)) {
-                // node.leaveCluster();
-                // }
 
             } catch (final IOException e) {
                 System.out.println("Node communication error: " + e.getMessage());
