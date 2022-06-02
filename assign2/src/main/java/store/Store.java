@@ -10,7 +10,11 @@ import communication.messages.MembershipMessage;
 import utils.Utils;
 
 import java.io.IOException;
+import java.rmi.AlreadyBoundException;
 import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
+import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -34,39 +38,46 @@ public class Store implements RMI {
     private TCPDispatcher tcpDispatcher;
     private PeriodicMulticastMessageSender periodicSender;
 
-    public static void main(final String[] args) throws InterruptedException {
+    public static void main(final String[] args) {
         if (args.length != 4) {
             System.out.println("Usage: java Store <IP_mcast_addr> <IP_mcast_port> <node_id>  <Store_port>");
         } else {
             try {
                 final Store node = new Store(args);
 
-                try {
-                    node.initDispatchers(args);
-                    node.enterCluster();
+                node.initDispatchers(args);
 
-                    final long start = System.currentTimeMillis();
-                    int timeElapsed = 0;
-                    while (timeElapsed < 9) {
-                        final long timeAfter = System.currentTimeMillis();
-                        timeElapsed = (int) ((timeAfter - start) / 1000);
-                    }
+                RMI stub = (RMI) UnicastRemoteObject.exportObject(node, 0);
 
-                    System.out.println("TIMES UP");
+                Registry registry = LocateRegistry.getRegistry();
+                registry.bind(args[2], stub);
 
-                    if (node.getID().equals(1)) {
-                        node.leaveCluster();
-                    }
+                System.out.println("The server is ready");
 
-                } catch (final NumberFormatException e) {
-                    e.printStackTrace();
-                } catch (final IOException e) {
-                    e.printStackTrace();
-                }
-            } catch (final NumberFormatException e) {
+                // node.enterCluster();
+
+                // final long start = System.currentTimeMillis();
+                // int timeElapsed = 0;
+                // while (timeElapsed < 9) {
+                // final long timeAfter = System.currentTimeMillis();
+                // timeElapsed = (int) ((timeAfter - start) / 1000);
+                // }
+
+                // System.out.println("TIMES UP");
+
+                // if (node.getID().equals(1)) {
+                // node.leaveCluster();
+                // }
+
+            } catch (final IOException e) {
+                System.out.println("Node communication error: " + e.getMessage());
                 e.printStackTrace();
+            } catch (AlreadyBoundException e1) {
+                System.out.println("Error binding ID: " + e1.getMessage());
+                e1.printStackTrace();
             }
         }
+
     }
 
     public List<Integer> getClusterIDs() {
@@ -95,7 +106,7 @@ public class Store implements RMI {
 
     }
 
-    public void initDispatchers(final String[] args) throws NumberFormatException, IOException {
+    public void initDispatchers(final String[] args) throws IOException {
         this.multicastDispatcher = new MulticastDispatcher(args[0], Integer.parseInt(args[1]), this);
         final Thread multicastThread = new Thread(this.multicastDispatcher);
         multicastThread.start();
