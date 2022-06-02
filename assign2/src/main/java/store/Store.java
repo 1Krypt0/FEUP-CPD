@@ -10,6 +10,8 @@ import communication.messages.MembershipMessage;
 import utils.Utils;
 
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.rmi.AlreadyBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -119,7 +121,7 @@ public class Store implements RMI {
         this.periodicSender.updateMembershipPeriodically();
     }
 
-    public void enterCluster() {
+    public void enterCluster() throws UnknownHostException {
         this.membershipCounterManager.incrementMembershipCounter();
         int sentJoinMessages = 0;
         final String logMessage = Integer.toString(this.nodeID) + " JOIN "
@@ -191,9 +193,9 @@ public class Store implements RMI {
 
     // NOTE: For now, the destination IP is localhost because we are not sure if the
     // ID will be the same as the ip
-    private void sendJoinMessage() {
+    private void sendJoinMessage() throws UnknownHostException {
         final byte[] msg = JoinMessage.composeMessage(this.nodeID, membershipCounterManager.getMembershipCounter(),
-                "localhost", this.tcpPort);
+                InetAddress.getLocalHost().toString(), this.tcpPort);
         this.multicastDispatcher.sendMessage(msg);
         System.out.println("Sent a JOIN message with contents " + new String(msg));
     }
@@ -248,7 +250,13 @@ public class Store implements RMI {
 
     @Override
     public String join() throws RemoteException {
-        this.enterCluster();
+        try {
+            this.enterCluster();
+        } catch (UnknownHostException e) {
+            System.out.println("Cannot determine localhost");
+            e.printStackTrace();
+            return "Error: Cannot determine localhost";
+        }
         return "Node " + this.nodeID + " has joined the cluster";
     }
 
