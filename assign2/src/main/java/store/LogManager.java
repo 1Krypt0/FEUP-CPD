@@ -18,7 +18,7 @@ public class LogManager {
     private static final String logsDir = "/../logs/";
     private final String logFile;
 
-    public LogManager(final int nodeID) {
+    public LogManager(final String nodeID) {
         final String localDir = System.getProperty("user.dir");
         final String logDir = localDir + logsDir + nodeID;
 

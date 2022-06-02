@@ -2,6 +2,7 @@ package store;
 
 import communication.MulticastDispatcher;
 import communication.PeriodicMulticastMessageSender;
+import communication.RMI;
 import communication.TCPDispatcher;
 import communication.messages.JoinMessage;
 import communication.messages.LeaveMessage;
@@ -9,83 +10,81 @@ import communication.messages.MembershipMessage;
 import utils.Utils;
 
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.rmi.AlreadyBoundException;
+import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
+import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
-import java.util.stream.Collectors;
 
-public class Node {
-    private final int nodeID;
+public class Store implements RMI {
+    private final String nodeID;
     private final int tcpPort;
     private final MembershipCounterManager membershipCounterManager;
     private int receivedMembershipMessages;
 
     private final LogManager logManager;
 
-    private final HashMap<Integer, String> clusterIPs;
-    private final HashMap<Integer, Integer> clusterPorts;
-    private List<Integer> clusterIDs;
+    private final HashMap<String, String> clusterIPs;
+    private final HashMap<String, Integer> clusterPorts;
+    private List<String> clusterIDs;
 
     private MulticastDispatcher multicastDispatcher;
     private TCPDispatcher tcpDispatcher;
     private PeriodicMulticastMessageSender periodicSender;
 
-    public static void main(final String[] args) throws InterruptedException {
+    public static void main(final String[] args) {
         if (args.length != 4) {
             System.out.println("Usage: java Store <IP_mcast_addr> <IP_mcast_port> <node_id>  <Store_port>");
         } else {
             try {
-                final Node node = new Node(args);
+                final Store node = new Store(args);
 
-                try {
-                    node.initDispatchers(args);
-                    node.enterCluster();
+                node.initDispatchers(args);
 
-                    final long start = System.currentTimeMillis();
-                    int timeElapsed = 0;
-                    while (timeElapsed < 9) {
-                        final long timeAfter = System.currentTimeMillis();
-                        timeElapsed = (int) ((timeAfter - start) / 1000);
-                    }
+                RMI stub = (RMI) UnicastRemoteObject.exportObject(node, 0);
 
-                    System.out.println("TIMES UP");
+                Registry registry = LocateRegistry.getRegistry();
+                registry.bind(args[2], stub);
 
-                    if (node.getID().equals(1)) {
-                        node.leaveCluster();
-                    }
+                System.out.println("The server is ready");
 
-                } catch (final NumberFormatException e) {
-                    e.printStackTrace();
-                } catch (final IOException e) {
-                    e.printStackTrace();
-                }
-            } catch (final NumberFormatException e) {
+            } catch (final IOException e) {
+                System.out.println("Node communication error: " + e.getMessage());
                 e.printStackTrace();
+            } catch (AlreadyBoundException e1) {
+                System.out.println("Error binding ID: " + e1.getMessage());
+                e1.printStackTrace();
             }
         }
+
     }
 
-    public List<Integer> getClusterIDs() {
+    public List<String> getClusterIDs() {
         return this.clusterIDs;
     }
 
-    public Integer getID() {
+    public String getID() {
         return this.nodeID;
     }
 
-    public Node(final String[] args) {
+    public Store(final String[] args) {
 
         this.receivedMembershipMessages = 0;
-        this.nodeID = Integer.parseInt(args[2]);
+        this.nodeID = args[2];
         this.tcpPort = Integer.parseInt(args[3]);
 
         this.membershipCounterManager = new MembershipCounterManager(this.nodeID);
 
-        this.clusterIPs = new HashMap<Integer, String>();
-        this.clusterPorts = new HashMap<Integer, Integer>();
-        this.clusterIDs = new ArrayList<Integer>();
+        this.clusterIPs = new HashMap<String, String>();
+        this.clusterPorts = new HashMap<String, Integer>();
+        this.clusterIDs = new ArrayList<String>();
 
         this.clusterIDs.add(this.nodeID);
 
@@ -93,7 +92,7 @@ public class Node {
 
     }
 
-    public void initDispatchers(final String[] args) throws NumberFormatException, IOException {
+    public void initDispatchers(final String[] args) throws IOException {
         this.multicastDispatcher = new MulticastDispatcher(args[0], Integer.parseInt(args[1]), this);
         final Thread multicastThread = new Thread(this.multicastDispatcher);
         multicastThread.start();
@@ -106,10 +105,17 @@ public class Node {
         this.periodicSender.updateMembershipPeriodically();
     }
 
-    public void enterCluster() {
+    public int enterCluster() throws UnknownHostException {
+
+        int counterValue = this.membershipCounterManager.getMembershipCounter();
+        if (counterValue % 2 == 0) {
+            System.out.println("Node has already joined the cluster");
+            return -1;
+        }
+
         this.membershipCounterManager.incrementMembershipCounter();
         int sentJoinMessages = 0;
-        final String logMessage = Integer.toString(this.nodeID) + " JOIN "
+        final String logMessage = this.nodeID + " JOIN "
                 + Integer.toString(membershipCounterManager.getMembershipCounter()) + "\n";
         logManager.writeToLog(logMessage);
         while (sentJoinMessages != 3) {
@@ -123,34 +129,45 @@ public class Node {
                 timeElapsed = (int) ((timeAfter - start) / 1000);
             }
         }
+
+        return 0;
     }
 
-    public void leaveCluster() {
+    public int leaveCluster() {
+
+        int counterValue = this.membershipCounterManager.getMembershipCounter();
+
+        if (counterValue % 2 == 1) {
+            System.out.println("Node has already left the cluster");
+            return -1;
+        }
+
         this.membershipCounterManager.incrementMembershipCounter();
-        final String logMessage = Integer.toString(this.nodeID) + " LEAVE "
+        final String logMessage = this.nodeID + " LEAVE "
                 + Integer.toString(membershipCounterManager.getMembershipCounter()) + "\n";
         logManager.writeToLog(logMessage);
         sendLeaveMessage();
-        this.multicastDispatcher.stopLoop();
-        this.tcpDispatcher.stopLoop();
         this.periodicSender.stopLoop();
+        this.tcpDispatcher.stopLoop();
+        this.multicastDispatcher.stopLoop();
+
+        return 0;
     }
 
-    public void receiveMembershipMessage(final int senderID, final String members, final String body) {
-        if (senderID == this.nodeID) {
+    public void receiveMembershipMessage(final String senderID, final String members, final String body) {
+        if (senderID.equals(this.nodeID)) {
         } else {
             this.receivedMembershipMessages++;
-            final List<Integer> clusterMembers = Arrays.stream(members.split("-")).map(s -> Integer.parseInt(s))
-                    .collect(Collectors.toList());
+            final List<String> clusterMembers = Arrays.asList(members.split("-"));
             clusterIDs = Utils.getListUnion(clusterIDs, clusterMembers);
             System.out.println("The updated cluster members are " + clusterIDs.toString());
             this.logManager.writeToLog(body);
         }
     }
 
-    public void receiveJoinMessage(final int senderID, final int membershipCounter, final String senderIP,
+    public void receiveJoinMessage(final String senderID, final int membershipCounter, final String senderIP,
             final int senderPort) {
-        if (senderID == nodeID) {
+        if (senderID.equals(nodeID)) {
         } else {
             if (!clusterIDs.contains(senderID)) {
                 // Update internal cluster state
@@ -159,8 +176,7 @@ public class Node {
                 this.clusterPorts.put(senderID, senderPort);
 
                 // Add to log events
-                final String logMessage = Integer.toString(senderID) + " JOIN " + Integer.toString(membershipCounter)
-                        + "\n";
+                final String logMessage = senderID + " JOIN " + Integer.toString(membershipCounter) + "\n";
                 this.logManager.writeToLog(logMessage);
                 sendMembershipMessage(senderIP, senderPort);
                 Collections.sort(this.clusterIDs);
@@ -168,8 +184,8 @@ public class Node {
         }
     }
 
-    public void receiveLeaveMessage(int senderID, int membershipCounter) {
-        final String logMessage = Integer.toString(senderID) + " LEAVE " + Integer.toString(membershipCounter) + "\n";
+    public void receiveLeaveMessage(String senderID, int membershipCounter) {
+        final String logMessage = senderID + " LEAVE " + Integer.toString(membershipCounter) + "\n";
         this.logManager.writeToLog(logMessage);
         this.clusterIDs.remove(senderID);
         this.clusterIPs.remove(senderID);
@@ -178,9 +194,9 @@ public class Node {
 
     // NOTE: For now, the destination IP is localhost because we are not sure if the
     // ID will be the same as the ip
-    private void sendJoinMessage() {
+    private void sendJoinMessage() throws UnknownHostException {
         final byte[] msg = JoinMessage.composeMessage(this.nodeID, membershipCounterManager.getMembershipCounter(),
-                "localhost", this.tcpPort);
+                InetAddress.getLocalHost().getHostAddress(), this.tcpPort);
         this.multicastDispatcher.sendMessage(msg);
         System.out.println("Sent a JOIN message with contents " + new String(msg));
     }
@@ -200,8 +216,8 @@ public class Node {
             logEvents += event + "\n";
         }
 
-        for (final int id : clusterIDs) {
-            clusterMembers += Integer.toString(id) + "-";
+        for (final String id : clusterIDs) {
+            clusterMembers += id + "-";
         }
 
         logEvents = logEvents.substring(0, logEvents.length() - 1);
@@ -221,11 +237,11 @@ public class Node {
             logEvents += event + "\n";
         }
 
-        for (final int id : clusterIDs) {
-            clusterMembers += Integer.toString(id) + "-";
+        for (final String id : clusterIDs) {
+            clusterMembers += id + "-";
         }
 
-        logEvents = logEvents.substring(0, logEvents.length() - 1);
+        logEvents = logEvents.length() == 0 ? "" : logEvents.substring(0, logEvents.length() - 1);
         clusterMembers = clusterMembers.substring(0, clusterMembers.length() - 1);
 
         final byte[] msg = MembershipMessage.composeMessage(this.nodeID, clusterMembers, logEvents);
@@ -233,16 +249,45 @@ public class Node {
         System.out.println("Sent a MEMBERSHIP MULTICAST message with contents " + new String(msg));
     }
 
+    @Override
+    public String join() throws RemoteException {
+        try {
+            int res = this.enterCluster();
+            if (res == 0) {
+                return "Node " + this.nodeID + " has joined the cluster";
+            } else {
+                return "Node has already joined the cluster";
+            }
+        } catch (UnknownHostException e) {
+            System.out.println("Cannot determine localhost");
+            e.printStackTrace();
+            return "Error: Cannot determine localhost";
+        }
+    }
+
+    @Override
+    public String leave() throws RemoteException {
+        int res = this.leaveCluster();
+        if (res == 0) {
+            return "Node " + this.nodeID + " has left the cluster";
+        } else {
+            return "Node has already left the cluster";
+        }
+    }
+
     // TODO: Pass actual data, let handlers separate the fields approprietly
-    public void delete(String msg) {
-
+    @Override
+    public String put(String fileName) throws RemoteException {
+        return null;
     }
 
-    public void get(String body) {
-
+    @Override
+    public String get(String key) throws RemoteException {
+        return null;
     }
 
-    public void put(String key, String value) {
-
+    @Override
+    public String delete(String key) throws RemoteException {
+        return null;
     }
 }

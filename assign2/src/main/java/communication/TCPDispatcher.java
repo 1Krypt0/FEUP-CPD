@@ -11,16 +11,16 @@ import java.net.UnknownHostException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import store.Node;
+import store.Store;
 
 public class TCPDispatcher extends Thread {
 
     private final ExecutorService executorService;
-    private final Node node;
+    private final Store node;
     private final ServerSocket serverSocket; // Passive socket for listening to messages
     private boolean working;
 
-    public TCPDispatcher(final int port, final Node node) throws IOException {
+    public TCPDispatcher(final int port, final Store node) throws IOException {
         this.executorService = Executors.newCachedThreadPool();
         this.node = node;
         this.serverSocket = new ServerSocket(port);
@@ -45,7 +45,6 @@ public class TCPDispatcher extends Thread {
                 executorService.submit(new MessageParser(msg, node));
 
             } catch (final IOException e) {
-                System.out.println("Error with TCP socket. Or just timed out");
             }
         }
         System.out.println("TCP socket shutting down");

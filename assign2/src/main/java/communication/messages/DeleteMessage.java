@@ -1,21 +1,22 @@
 package communication.messages;
 
-import store.Node;
+import store.Store;
 
 import java.nio.charset.StandardCharsets;
+import java.rmi.RemoteException;
 
 public class DeleteMessage extends Message {
 
     private final String body;
-    private final Node node;
+    private final Store node;
 
-    public DeleteMessage(String messageBody, Node node) {
+    public DeleteMessage(String messageBody, Store node) {
         this.body = messageBody;
         this.node = node;
     }
 
     @Override
-    public void handleMessage() {
+    public void handleMessage() throws RemoteException {
         // TODO: Deal with extracting the data here, only pass actual body
         // Check Membership, Join and Delete for Examples
         node.delete(this.body);

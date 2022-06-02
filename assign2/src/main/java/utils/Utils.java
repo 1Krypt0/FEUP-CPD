@@ -20,10 +20,10 @@ public class Utils {
         return null;
     }
 
-    public static List<Integer> getListUnion(List<Integer> l1, List<Integer> l2) {
-        Set<Integer> union = new HashSet<>();
-        union.addAll(l1);
-        union.addAll(l2);
-        return new ArrayList<Integer>(union);
+    public static List<String> getListUnion(List<String> clusterIDs, List<String> clusterMembers) {
+        Set<String> union = new HashSet<>();
+        union.addAll(clusterIDs);
+        union.addAll(clusterMembers);
+        return new ArrayList<String>(union);
     }
 }
