@@ -1,36 +1,30 @@
 package communication.messages;
 
-import jdk.jshell.execution.Util;
-import store.Store;
+import store.Node;
 import utils.Utils;
 
 import java.nio.charset.StandardCharsets;
-import java.security.NoSuchAlgorithmException;
 
-public class PutMessage extends Message{
-        private final byte[] body;
+public class PutMessage extends Message {
+    private final String body;
+    private final Node node;
 
-        public PutMessage(byte[] body, Store store) {
-            super(store);
-            this.body = body;
-        }
+    public PutMessage(String body, Node node) {
+        this.body = body;
+        this.node = node;
+    }
 
-        @Override
-        public void handleMessage() {
-            try {
-                //TODO: To anything with the data that this function returns (send it to the client)
-                store.put(Utils.getHash(this.body), new String(this.body, StandardCharsets.UTF_8));
-            } catch (NoSuchAlgorithmException e) {
-                throw new RuntimeException(e);
-            }
-        }
+    @Override
+    public void handleMessage() {
+        // TODO: To anything with the data that this function returns (send it to the
+        // client)
+        node.put(new String(Utils.calculateHash(this.body.getBytes())), this.body);
+    }
 
-        public static byte[] composeMessage(String fileName) {
-            String string = "PUT" +
-                    Utils.CRLF + Utils.CRLF +
-                    fileName;
+    public static byte[] composeMessage(String fileName) {
+        String string = "PUT" + Message.CRLF + Message.CRLF + fileName;
 
-            return string.getBytes(StandardCharsets.UTF_8);
-        }
+        return string.getBytes(StandardCharsets.UTF_8);
+    }
 
 }

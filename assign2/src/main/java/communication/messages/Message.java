@@ -1,37 +1,46 @@
 package communication.messages;
 
 import store.Node;
-import utils.Utils;
 
 public abstract class Message {
+    public static final String CRLF = "\r\n";
+
     public abstract void handleMessage();
 
+    public static Message parseMessage(byte[] msg, Node node) {
 
-    public static Message parseMessage(byte[] messageData, Store store) {
-        int headerEndIdx = Utils.findHeaderEnd(messageData);
-        if (headerEndIdx == -1) {
-            return null;
-        }
-        String[] messageHeaders = new String(Arrays.copyOf(messageData, headerEndIdx + 1)).split(Utils.CRLF);
+        String[] messageHeader = separateHeader(msg);
+        String messageBody = separateBody(msg);
+        String messageType = messageHeader[0];
 
-        byte[] messageBody = Arrays.copyOfRange(messageData, headerEndIdx + 5, messageData.length);
-
-        switch (messageHeaders[0]) {
+        switch (messageType) {
         case "JOIN":
-            return new JoinMessage();
+            return new JoinMessage(node, messageHeader);
         case "LEAVE":
-            return new LeaveMessage();
+            return new LeaveMessage(node, messageHeader);
         case "MEMBERSHIP":
-            return new MembershipMessage();
+            return new MembershipMessage(node, messageHeader, messageBody);
         case "PUT":
-            return new PutMessage(messageBody, store);
+            return new PutMessage(messageBody, node);
         case "GET":
-            return new GetMessage(messageBody, store);
+            return new GetMessage(messageBody, node);
         case "DELETE":
-            return new DeleteMessage(messageBody, store);
+            return new DeleteMessage(messageBody, node);
         default:
             break;
         }
         return null;
+    }
+
+    private static String[] separateHeader(byte[] msg) {
+        String[] message = new String(msg).split(CRLF + CRLF);
+        String[] messageHeader = message[0].split(" ");
+        return messageHeader;
+    }
+
+    private static String separateBody(byte[] msg) {
+        String[] message = new String(msg).split(CRLF + CRLF);
+        String messageBody = message.length == 1 ? "" : message[1].trim();
+        return messageBody;
     }
 }

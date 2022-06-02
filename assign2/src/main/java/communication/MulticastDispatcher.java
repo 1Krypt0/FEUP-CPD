@@ -7,7 +7,6 @@ import java.net.InetSocketAddress;
 import java.net.MulticastSocket;
 import java.net.NetworkInterface;
 import java.net.SocketAddress;
-import java.net.UnknownHostException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -22,17 +21,24 @@ public class MulticastDispatcher extends Thread {
     private final SocketAddress address;
     private final int port;
     private final String ip;
+    private boolean working;
 
     public MulticastDispatcher(final String ip, final int port, final Node node) throws IOException {
         this.executorService = Executors.newCachedThreadPool();
         this.node = node;
         this.buf = new byte[512];
         this.socket = new MulticastSocket(port);
+        this.socket.setSoTimeout(1000);
         this.address = new InetSocketAddress(ip, port);
         this.ip = ip;
         this.port = port;
         final NetworkInterface networkInterface = NetworkInterface.getByName(ip);
         this.socket.joinGroup(address, networkInterface);
+        this.working = true;
+    }
+
+    public void stopLoop() {
+        this.working = false;
     }
 
     /**
@@ -40,26 +46,24 @@ public class MulticastDispatcher extends Thread {
      */
     @Override
     public void run() {
-        System.out.println("Multicast dispatcher is now running");
-        while (true) {
+        while (this.working) {
             final DatagramPacket packet = new DatagramPacket(buf, buf.length);
             try {
                 socket.receive(packet);
-                System.out.println("Multicast Dispatcher Received a Message!");
                 executorService.submit(new MessageParser(packet.getData(), node));
             } catch (final IOException e) {
-                System.out.println("Error receiving multicast packet: " + e.getMessage());
-
-                executorService.submit(new MessageHandler(packet.getData(), store));
+                System.out.println("Error with multicast socket. Or just timed out");
             }
         }
+        System.out.println("Multicast socket shutting down");
     }
 
-    public void sendMessage(final byte[] msg) throws UnknownHostException {
-        InetAddress address = InetAddress.getByName(this.ip);
-        final DatagramPacket packet = new DatagramPacket(msg, msg.length, address, port);
-
+    public void sendMessage(final byte[] msg) {
+        InetAddress address;
         try {
+            address = InetAddress.getByName(this.ip);
+            final DatagramPacket packet = new DatagramPacket(msg, msg.length, address, port);
+
             socket.send(packet);
         } catch (final IOException e) {
             System.out.println("Error sending Multicast Messages: " + e.getMessage());
