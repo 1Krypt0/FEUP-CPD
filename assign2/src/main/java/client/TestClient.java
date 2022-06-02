@@ -11,16 +11,11 @@ public class TestClient {
 
     private static RMI node;
 
-    private TestClient() {
-    }
-
     public static void main(String[] args) {
         if (args.length < 2 || args.length > 3) {
             System.out.println("Usage: java TestClient <node_ap> <operation> [<opnd>]");
             return;
         }
-
-        TestClient client = new TestClient();
 
         try {
 
@@ -32,21 +27,31 @@ public class TestClient {
             node = (RMI) registry.lookup(nodeID);
 
             String op = args[1];
+            String operand = args[2];
+            String res;
 
             switch (op.toUpperCase()) {
             case "JOIN":
+                res = node.join();
                 break;
             case "LEAVE":
+                res = node.leave();
                 break;
             case "PUT":
+                res = node.put(operand);
                 break;
             case "GET":
+                res = node.get(operand);
                 break;
             case "DELETE":
+                res = node.delete(operand);
                 break;
             default:
                 System.out.println("Unknown operation: " + op);
+                return;
             }
+
+            System.out.println(res);
 
         } catch (RemoteException e) {
             System.out.println("Error executing remote function: " + e.getMessage());
