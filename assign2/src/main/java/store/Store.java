@@ -56,8 +56,6 @@ public class Store implements RMI {
 
                 System.out.println("The server is ready");
 
-
-
             } catch (final IOException e) {
                 System.out.println("Node communication error: " + e.getMessage());
                 e.printStackTrace();
@@ -109,6 +107,14 @@ public class Store implements RMI {
     }
 
     public void enterCluster() throws UnknownHostException {
+
+        int counterValue = this.membershipCounterManager.getMembershipCounter();
+
+        if (counterValue % 2 == 0) {
+            System.out.println("Node has already joined the cluster");
+            return;
+        }
+
         this.membershipCounterManager.incrementMembershipCounter();
         int sentJoinMessages = 0;
         final String logMessage = Integer.toString(this.nodeID) + " JOIN "
@@ -128,6 +134,14 @@ public class Store implements RMI {
     }
 
     public void leaveCluster() {
+
+        int counterValue = this.membershipCounterManager.getMembershipCounter();
+
+        if (counterValue % 2 == 1) {
+            System.out.println("Node has already left the cluster");
+            return;
+        }
+
         this.membershipCounterManager.incrementMembershipCounter();
         final String logMessage = Integer.toString(this.nodeID) + " LEAVE "
                 + Integer.toString(membershipCounterManager.getMembershipCounter()) + "\n";
