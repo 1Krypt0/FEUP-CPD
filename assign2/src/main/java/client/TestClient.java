@@ -6,6 +6,7 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 
 import communication.RMI;
+import utils.Utils;
 
 public class TestClient {
 
@@ -30,6 +31,14 @@ public class TestClient {
             String res;
             String operand;
 
+            if (op.equals("PUT") || op.equals("GET") || op.equals("DELETE")) {
+                if (args.length != 3) {
+                    System.out.println("Usage: java TestClient <node_ap> <operation> [<opnd>]");
+                    return;
+                }
+                operand = args[2];
+            }
+
             switch (op.toUpperCase()) {
             case "JOIN":
                 res = node.join();
@@ -38,26 +47,29 @@ public class TestClient {
                 res = node.leave();
                 break;
             case "PUT":
-                operand = args[2];
+                res = node.put(Utils.calculateHash(operand), operand);
                 break;
             case "GET":
-                operand = args[2];
+                res = node.get(Utils.calculateHash(operand));
                 break;
             case "DELETE":
-                operand = args[2];
+                res = node.delete(Utils.calculateHash(operand));
                 break;
             default:
                 System.out.println("Unknown operation: " + op);
                 return;
             }
 
-            System.out.println(res);
+            System.out.println("Operation Result:" + res);
 
         } catch (RemoteException e) {
             System.out.println("Error executing remote function: " + e.getMessage());
             e.printStackTrace();
         } catch (NotBoundException e) {
             System.out.println("RMI is not bound to any object" + e.getMessage());
+            e.printStackTrace();
+        } catch (PatternSyntaxException e) {
+            System.out.println("Error parsing node access point: " + e.getMessage());
             e.printStackTrace();
         }
     }
