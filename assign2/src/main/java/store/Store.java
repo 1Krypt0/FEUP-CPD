@@ -22,19 +22,18 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class Store implements RMI {
-    private final int nodeID;
+    private final String nodeID;
     private final int tcpPort;
     private final MembershipCounterManager membershipCounterManager;
     private int receivedMembershipMessages;
 
     private final LogManager logManager;
 
-    private final HashMap<Integer, String> clusterIPs;
-    private final HashMap<Integer, Integer> clusterPorts;
-    private List<Integer> clusterIDs;
+    private final HashMap<String, String> clusterIPs;
+    private final HashMap<String, Integer> clusterPorts;
+    private List<String> clusterIDs;
 
     private MulticastDispatcher multicastDispatcher;
     private TCPDispatcher tcpDispatcher;
@@ -67,25 +66,25 @@ public class Store implements RMI {
 
     }
 
-    public List<Integer> getClusterIDs() {
+    public List<String> getClusterIDs() {
         return this.clusterIDs;
     }
 
-    public Integer getID() {
+    public String getID() {
         return this.nodeID;
     }
 
     public Store(final String[] args) {
 
         this.receivedMembershipMessages = 0;
-        this.nodeID = Integer.parseInt(args[2]);
+        this.nodeID = args[2];
         this.tcpPort = Integer.parseInt(args[3]);
 
         this.membershipCounterManager = new MembershipCounterManager(this.nodeID);
 
-        this.clusterIPs = new HashMap<Integer, String>();
-        this.clusterPorts = new HashMap<Integer, Integer>();
-        this.clusterIDs = new ArrayList<Integer>();
+        this.clusterIPs = new HashMap<String, String>();
+        this.clusterPorts = new HashMap<String, Integer>();
+        this.clusterIDs = new ArrayList<String>();
 
         this.clusterIDs.add(this.nodeID);
 
@@ -116,7 +115,7 @@ public class Store implements RMI {
 
         this.membershipCounterManager.incrementMembershipCounter();
         int sentJoinMessages = 0;
-        final String logMessage = Integer.toString(this.nodeID) + " JOIN "
+        final String logMessage = this.nodeID + " JOIN "
                 + Integer.toString(membershipCounterManager.getMembershipCounter()) + "\n";
         logManager.writeToLog(logMessage);
         while (sentJoinMessages != 3) {
@@ -144,7 +143,7 @@ public class Store implements RMI {
         }
 
         this.membershipCounterManager.incrementMembershipCounter();
-        final String logMessage = Integer.toString(this.nodeID) + " LEAVE "
+        final String logMessage = this.nodeID + " LEAVE "
                 + Integer.toString(membershipCounterManager.getMembershipCounter()) + "\n";
         logManager.writeToLog(logMessage);
         sendLeaveMessage();
@@ -155,21 +154,20 @@ public class Store implements RMI {
         return 0;
     }
 
-    public void receiveMembershipMessage(final int senderID, final String members, final String body) {
-        if (senderID == this.nodeID) {
+    public void receiveMembershipMessage(final String senderID, final String members, final String body) {
+        if (senderID.equals(this.nodeID)) {
         } else {
             this.receivedMembershipMessages++;
-            final List<Integer> clusterMembers = Arrays.stream(members.split("-")).map(s -> Integer.parseInt(s))
-                    .collect(Collectors.toList());
+            final List<String> clusterMembers = Arrays.asList(members.split("-"));
             clusterIDs = Utils.getListUnion(clusterIDs, clusterMembers);
             System.out.println("The updated cluster members are " + clusterIDs.toString());
             this.logManager.writeToLog(body);
         }
     }
 
-    public void receiveJoinMessage(final int senderID, final int membershipCounter, final String senderIP,
+    public void receiveJoinMessage(final String senderID, final int membershipCounter, final String senderIP,
             final int senderPort) {
-        if (senderID == nodeID) {
+        if (senderID.equals(nodeID)) {
         } else {
             if (!clusterIDs.contains(senderID)) {
                 // Update internal cluster state
@@ -178,8 +176,7 @@ public class Store implements RMI {
                 this.clusterPorts.put(senderID, senderPort);
 
                 // Add to log events
-                final String logMessage = Integer.toString(senderID) + " JOIN " + Integer.toString(membershipCounter)
-                        + "\n";
+                final String logMessage = senderID + " JOIN " + Integer.toString(membershipCounter) + "\n";
                 this.logManager.writeToLog(logMessage);
                 sendMembershipMessage(senderIP, senderPort);
                 Collections.sort(this.clusterIDs);
@@ -187,8 +184,8 @@ public class Store implements RMI {
         }
     }
 
-    public void receiveLeaveMessage(int senderID, int membershipCounter) {
-        final String logMessage = Integer.toString(senderID) + " LEAVE " + Integer.toString(membershipCounter) + "\n";
+    public void receiveLeaveMessage(String senderID, int membershipCounter) {
+        final String logMessage = senderID + " LEAVE " + Integer.toString(membershipCounter) + "\n";
         this.logManager.writeToLog(logMessage);
         this.clusterIDs.remove(senderID);
         this.clusterIPs.remove(senderID);
@@ -219,8 +216,8 @@ public class Store implements RMI {
             logEvents += event + "\n";
         }
 
-        for (final int id : clusterIDs) {
-            clusterMembers += Integer.toString(id) + "-";
+        for (final String id : clusterIDs) {
+            clusterMembers += id + "-";
         }
 
         logEvents = logEvents.substring(0, logEvents.length() - 1);
@@ -240,8 +237,8 @@ public class Store implements RMI {
             logEvents += event + "\n";
         }
 
-        for (final int id : clusterIDs) {
-            clusterMembers += Integer.toString(id) + "-";
+        for (final String id : clusterIDs) {
+            clusterMembers += id + "-";
         }
 
         logEvents = logEvents.length() == 0 ? "" : logEvents.substring(0, logEvents.length() - 1);

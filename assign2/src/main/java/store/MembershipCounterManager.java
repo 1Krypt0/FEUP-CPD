@@ -15,7 +15,7 @@ public class MembershipCounterManager {
     private static final String countersDir = "/../membership/";
     private final String counterFile;
 
-    public MembershipCounterManager(final int nodeID) {
+    public MembershipCounterManager(final String nodeID) {
         final String localDir = System.getProperty("user.dir");
         final String counterDir = localDir + countersDir + nodeID;
 

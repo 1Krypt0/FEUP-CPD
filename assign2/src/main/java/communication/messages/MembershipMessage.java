@@ -16,13 +16,12 @@ public class MembershipMessage extends Message {
 
     @Override
     public void handleMessage() {
-        int senderID = Integer.parseInt(this.header[1].split(":")[1]);
+        String senderID = this.header[1].split(":")[1];
         String members = this.header[2].split(":")[1];
         this.node.receiveMembershipMessage(senderID, members, body);
     }
 
-    public static byte[] composeMessage(int id, String members, String logData) {
-        return ("MEMBERSHIP id:" + id + " members:" + members + Message.CRLF + Message.CRLF + logData).getBytes();
+    public static byte[] composeMessage(String nodeID, String members, String logData) {
+        return ("MEMBERSHIP id:" + nodeID + " members:" + members + Message.CRLF + Message.CRLF + logData).getBytes();
     }
-
 }
