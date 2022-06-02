@@ -2,6 +2,7 @@ package store;
 
 import communication.MulticastDispatcher;
 import communication.PeriodicMulticastMessageSender;
+import communication.RMI;
 import communication.TCPDispatcher;
 import communication.messages.JoinMessage;
 import communication.messages.LeaveMessage;
@@ -9,6 +10,7 @@ import communication.messages.MembershipMessage;
 import utils.Utils;
 
 import java.io.IOException;
+import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -16,7 +18,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class Store {
+public class Store implements RMI {
     private final int nodeID;
     private final int tcpPort;
     private final MembershipCounterManager membershipCounterManager;
@@ -233,16 +235,31 @@ public class Store {
         System.out.println("Sent a MEMBERSHIP MULTICAST message with contents " + new String(msg));
     }
 
+    @Override
+    public String join() throws RemoteException {
+        this.enterCluster();
+        return "Node " + this.nodeID + " has joined the cluster";
+    }
+
+    @Override
+    public String leave() throws RemoteException {
+        this.leaveCluster();
+        return "Node " + this.nodeID + " has left the cluster";
+    }
+
     // TODO: Pass actual data, let handlers separate the fields approprietly
-    public void delete(String msg) {
-
+    @Override
+    public String put(String fileName) throws RemoteException {
+        return null;
     }
 
-    public void get(String body) {
-
+    @Override
+    public String get(String key) throws RemoteException {
+        return null;
     }
 
-    public void put(String key, String value) {
-
+    @Override
+    public String delete(String key) throws RemoteException {
+        return null;
     }
 }
