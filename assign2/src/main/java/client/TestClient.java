@@ -11,6 +11,9 @@ public class TestClient {
 
     private static RMI node;
 
+    private TestClient() {
+    }
+
     public static void main(String[] args) {
         if (args.length < 2 || args.length > 3) {
             System.out.println("Usage: java TestClient <node_ap> <operation> [<opnd>]");
@@ -20,8 +23,13 @@ public class TestClient {
         TestClient client = new TestClient();
 
         try {
-            Registry registry = LocateRegistry.getRegistry();
-            node = (RMI) registry.lookup(args[0]);
+
+            String[] accessPoint = args[0].split(":");
+            String host = accessPoint[0];
+            String nodeID = accessPoint[1];
+
+            Registry registry = LocateRegistry.getRegistry(host);
+            node = (RMI) registry.lookup(nodeID);
 
             String op = args[1];
 
