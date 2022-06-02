@@ -278,47 +278,43 @@ public class Store implements RMI {
         }
     }
 
-    public void put(String key, String value) {
+    public String put(String key, String value) throws RemoteException {
         final String logMessage = this.nodeID + " PUT " + key + " " + value + "\n";
         this.logManager.writeToLog(logMessage);
         boolean done = this.storageManager.writeFile(key, value);
 
         if (done) {
-            System.out.println("Successfully wrote to file");
-            // SEND TO CLIENT SAYING IT WAS SUCCESSFULL
+            return "Successfully wrote to file with key " + key;
         } else {
-            System.out.println("Failed to write to file");
-            // SEND TO CLIENT SAYING IT WAS UNSUCCESSFULL
+            return "Failed to write to file with key " + key;
         }
     }
 
-    public void get(String key) {
+    public String get(String key) throws RemoteException {
         final String logMessage = this.nodeID + " GET " + key + "\n";
         this.logManager.writeToLog(logMessage);
         String value = this.storageManager.readFile(key);
 
         if (value != null) {
-            System.out.println("Successfully read from file");
-            // SEND TO CLIENT SAYING IT WAS SUCCESSFULL WITH DATA
+            return "Successfully read from file with key " + key + " and value " + value;
         } else {
-            System.out.println("Failed to read from file");
             // DO THINGS SEARCH FOR KEY ON OTHER NODES AND SUCH MAURO PART
             // SEND TO CLIENT SAYING IT WAS UNSUCCESSFULL IF IT NEVER FINDS IT
+            return "Failed to read from file with key " + key;
         }
     }
 
-    public void delete(String key){
+    public String delete(String key) throws RemoteException{
         final String logMessage = this.nodeID + " DELETE " + key + "\n";
         this.logManager.writeToLog(logMessage);
         boolean done = this.storageManager.deleteFile(key);
 
         if (done) {
-            System.out.println("Successfully deleted from file");
-            // SEND TO CLIENT SAYING IT WAS SUCCESSFULL
+            return "Successfully deleted file " + key;
         } else {
-            System.out.println("Failed to delete from file");
             // DO THINGS SEARCH FOR KEY ON OTHER NODES AND SUCH MAURO PART
             // SEND TO CLIENT SAYING IT WAS UNSUCCESSFULL IF IT NEVER FINDS IT
+            return "Failed to delete file " + key;
         }
     }
 }
