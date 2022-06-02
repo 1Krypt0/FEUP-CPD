@@ -27,8 +27,8 @@ public class TestClient {
             node = (RMI) registry.lookup(nodeID);
 
             String op = args[1];
-            String operand = args[2];
             String res;
+            String operand;
 
             switch (op.toUpperCase()) {
             case "JOIN":
@@ -38,12 +38,15 @@ public class TestClient {
                 res = node.leave();
                 break;
             case "PUT":
+                operand = args[2];
                 res = node.put(operand);
                 break;
             case "GET":
+                operand = args[2];
                 res = node.get(operand);
                 break;
             case "DELETE":
+                operand = args[2];
                 res = node.delete(operand);
                 break;
             default:
