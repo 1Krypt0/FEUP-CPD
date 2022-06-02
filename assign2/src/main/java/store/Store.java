@@ -144,9 +144,9 @@ public class Store implements RMI {
                 + Integer.toString(membershipCounterManager.getMembershipCounter()) + "\n";
         logManager.writeToLog(logMessage);
         sendLeaveMessage();
-        this.multicastDispatcher.stopLoop();
-        this.tcpDispatcher.stopLoop();
         this.periodicSender.stopLoop();
+        this.tcpDispatcher.stopLoop();
+        this.multicastDispatcher.stopLoop();
     }
 
     public void receiveMembershipMessage(final int senderID, final String members, final String body) {
