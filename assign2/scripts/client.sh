@@ -9,9 +9,9 @@
 
 
 
-if [ "$#" -ne 3 ]
+if [ "$#" -lt 2 ]
 then
-    echo "Usage: $0 <node_ap> <operation> [<opnd>]"
+    echo "Usage: $0 <node_ap> JOIN|LEAVE|PUT|GET|DELETE [<opnd>]"
     exit 1
 fi
 
@@ -19,7 +19,49 @@ fi
 
 ap=$1
 op=$2
-operand=$3
+
+case $op in
+JOIN)
+    if [ "$#" -ne 2 ]
+	then
+		echo "Usage: $0 <node_ap> JOIN"
+		exit 1
+	fi
+    operand=""
+    ;;
+LEAVE)
+    if [ "$#" -ne 2 ]
+	then
+		echo "Usage: $0 <node_ap> LEAVE"
+		exit 1
+	fi
+    operand=""
+    ;;
+PUT)
+    if [ "$#" -ne 3 ]
+	then
+		echo "Usage: $0 <node_ap> PUT <file_path>"
+		exit 1
+	fi
+    operand=$3
+    ;;
+GET)
+    if [ "$#" -ne 3 ]
+	then
+		echo "Usage: $0 <node_ap> GET <key>"
+		exit 1
+	fi
+    operand=$3
+    ;;
+DELETE)
+    if [ "$#" -ne 3 ]
+	then
+		echo "Usage: $0 <node_ap> DELETE <key>"
+		exit 1
+	fi
+    operand=$3
+    ;;
+esac
 
 # Execute the program
 java client.TestClient ${ap} ${op} ${operand}
