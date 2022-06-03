@@ -70,8 +70,6 @@ public class StorageManager {
             }
         }
         return fileNameList;
-
-
     }
 
 }

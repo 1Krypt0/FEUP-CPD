@@ -194,7 +194,7 @@ public class Store implements RMI {
         }
 
         joinRing(this.nodeHashValue);
-        updateSuccessor(); //TODO: is this necessary?
+        updateSuccessor();
 
         this.membershipCounterManager.incrementMembershipCounter();
         int sentJoinMessages = 0;
@@ -285,7 +285,6 @@ public class Store implements RMI {
             this.logManager.writeToLog(logMessage);
             this.clusterIDs.remove(senderID);
 
-            //TODO: receive from predecessor
             leaveRing(senderID);
             updateSuccessor();
 
@@ -350,7 +349,15 @@ public class Store implements RMI {
     }
 
     public void transferToSuccessor() {
-        //TODO: transfer node contents to sucessor
+        List<String> nodeFiles = storageManager.getFiles();
+
+        for(String file : nodeFiles){
+            String fileContents = storageManager.readFile(file);
+            String successorID = findCorrectNode(this.successorHash);
+            String successorIP = this.clusterIPs.get(successorID);
+            int successorPort = this.clusterPorts.get(successorID);
+            put(fileContents, successorIP, successorPort);
+        }
     }
 
     public void put(String value, String ip, int port) {
