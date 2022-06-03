@@ -278,6 +278,8 @@ public class Store implements RMI {
         }
     }
 
+    /* OLD */
+    /*
     public String put(String key, String value) throws RemoteException {
         final String logMessage = this.nodeID + " PUT " + key + " " + value + "\n";
         this.logManager.writeToLog(logMessage);
@@ -316,5 +318,26 @@ public class Store implements RMI {
             // SEND TO CLIENT SAYING IT WAS UNSUCCESSFULL IF IT NEVER FINDS IT
             return "Failed to delete file " + key;
         }
+        */
+     */
+    /* NEW */
+    // TODO: Pass actual data, let handlers separate the fields approprietly
+    public void put(String value) {
+        String hashValue = Utils.bytesToHex(Utils.calculateHash(value.getBytes()));
+
+        // if hashValue inRange then save file and return key (ez)
+        // else:
+        // determine correct node to send
+        // compose tcp message
+        // send via tcp the values
+        // await for ACK response
+        // Send hashValue back to user
+    }
+
+    public void get(String key) {
+    }
+
+    public void delete(String key) {
+
     }
 }
