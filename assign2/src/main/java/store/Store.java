@@ -4,9 +4,12 @@ import communication.MulticastDispatcher;
 import communication.PeriodicMulticastMessageSender;
 import communication.RMI;
 import communication.TCPDispatcher;
+import communication.messages.DeleteMessage;
+import communication.messages.GetMessage;
 import communication.messages.JoinMessage;
 import communication.messages.LeaveMessage;
 import communication.messages.MembershipMessage;
+import communication.messages.PutMessage;
 import utils.Utils;
 
 import java.io.IOException;
@@ -22,9 +25,11 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class Store implements RMI {
     private final String nodeID;
+    private final String nodeHashValue;
     private final int tcpPort;
     private final MembershipCounterManager membershipCounterManager;
     private int receivedMembershipMessages;
@@ -34,6 +39,7 @@ public class Store implements RMI {
     private final HashMap<String, String> clusterIPs;
     private final HashMap<String, Integer> clusterPorts;
     private List<String> clusterIDs;
+    private List<String> clusterHashes;
 
     private final StorageManager storageManager;
 
@@ -80,6 +86,7 @@ public class Store implements RMI {
 
         this.receivedMembershipMessages = 0;
         this.nodeID = args[2];
+        this.nodeHashValue = Utils.bytesToHex(Utils.calculateHash(this.nodeID.getBytes()));
         this.tcpPort = Integer.parseInt(args[3]);
 
         this.membershipCounterManager = new MembershipCounterManager(this.nodeID);
@@ -87,8 +94,10 @@ public class Store implements RMI {
         this.clusterIPs = new HashMap<String, String>();
         this.clusterPorts = new HashMap<String, Integer>();
         this.clusterIDs = new ArrayList<String>();
+        this.clusterHashes = new ArrayList<String>();
 
         this.clusterIDs.add(this.nodeID);
+        this.clusterHashes.add(Utils.bytesToHex(Utils.calculateHash(this.nodeID.getBytes())));
 
         this.logManager = new LogManager(this.nodeID);
 
@@ -162,8 +171,10 @@ public class Store implements RMI {
         } else {
             this.receivedMembershipMessages++;
             final List<String> clusterMembers = Arrays.asList(members.split("-"));
+            final List<String> clusterMemberHashes = clusterMembers.stream()
+                    .map(x -> Utils.bytesToHex(Utils.calculateHash(x.getBytes()))).collect(Collectors.toList());
             clusterIDs = Utils.getListUnion(clusterIDs, clusterMembers);
-            System.out.println("The updated cluster members are " + clusterIDs.toString());
+            clusterHashes = Utils.getListUnion(clusterHashes, clusterMemberHashes);
             this.logManager.writeToLog(body);
         }
     }
@@ -175,14 +186,17 @@ public class Store implements RMI {
             if (!clusterIDs.contains(senderID)) {
                 // Update internal cluster state
                 this.clusterIDs.add(senderID);
+                this.clusterHashes.add(Utils.bytesToHex(Utils.calculateHash(senderID.getBytes())));
                 this.clusterIPs.put(senderID, senderIP);
                 this.clusterPorts.put(senderID, senderPort);
+
+                Collections.sort(this.clusterIDs);
+                Collections.sort(this.clusterHashes);
 
                 // Add to log events
                 final String logMessage = senderID + " JOIN " + Integer.toString(membershipCounter) + "\n";
                 this.logManager.writeToLog(logMessage);
                 sendMembershipMessage(senderIP, senderPort);
-                Collections.sort(this.clusterIDs);
             }
         }
     }
@@ -191,12 +205,11 @@ public class Store implements RMI {
         final String logMessage = senderID + " LEAVE " + Integer.toString(membershipCounter) + "\n";
         this.logManager.writeToLog(logMessage);
         this.clusterIDs.remove(senderID);
+        this.clusterHashes.remove(Utils.bytesToHex(Utils.calculateHash(senderID.getBytes())));
         this.clusterIPs.remove(senderID);
         this.clusterPorts.remove(senderID);
     }
 
-    // NOTE: For now, the destination IP is localhost because we are not sure if the
-    // ID will be the same as the ip
     private void sendJoinMessage() throws UnknownHostException {
         final byte[] msg = JoinMessage.composeMessage(this.nodeID, membershipCounterManager.getMembershipCounter(),
                 InetAddress.getLocalHost().getHostAddress(), this.tcpPort);
@@ -278,41 +291,73 @@ public class Store implements RMI {
         }
     }
 
-    // TODO: Pass actual data, let handlers separate the fields approprietly
-    public void put(String value) {
+    public void put(String value, String ip, int port) {
         String hashValue = Utils.bytesToHex(Utils.calculateHash(value.getBytes()));
 
-        // boolean done = this.storageManager.writeFile(hashValue, value);
-        // if hashValue inRange then save file and return key (ez)
-        // else:
-        // determine correct node to send
-        // compose tcp message
-        // send via tcp the values
-        // await for ACK response
-        // Send hashValue back to user
-    }
+        int idx = this.clusterHashes.indexOf(this.nodeHashValue);
+        String nextNodeHashValue = this.clusterHashes.get(idx == this.clusterHashes.size() - 1 ? 0 : idx + 1);
 
-    public String get(String key) throws RemoteException {
-        String value = this.storageManager.readFile(key);
+        if ((hashValue.compareTo(this.nodeHashValue) >= 0 && hashValue.compareTo(nextNodeHashValue) < 0)
+                || this.clusterIDs.size() == 1) {
+            this.storageManager.writeFile(hashValue, value);
 
-        if (value != null) {
-            return "Successfully read from file with key " + key + " and value " + value;
+            // Send key as return message
+            final byte[] msg = hashValue.getBytes();
+            this.tcpDispatcher.sendMessage(msg, ip, port);
         } else {
-            // DO THINGS SEARCH FOR KEY ON OTHER NODES AND SUCH MAURO PART
-            // SEND TO CLIENT SAYING IT WAS UNSUCCESSFULL IF IT NEVER FINDS IT
-            return "Failed to read from file with key " + key;
+            String correctNodeID = findCorrectNode(hashValue);
+            final byte[] msg = PutMessage.composeMessage(value, ip, port);
+            this.tcpDispatcher.sendMessage(msg, this.clusterIPs.get(correctNodeID),
+                    this.clusterPorts.get(correctNodeID));
         }
     }
 
-    public String delete(String key) throws RemoteException {
-        boolean done = this.storageManager.deleteFile(key);
+    public void get(String key, String ip, int port) {
+        int idx = this.clusterHashes.indexOf(this.nodeHashValue);
+        String nextNodeHashValue = this.clusterHashes.get(idx == this.clusterHashes.size() - 1 ? 0 : idx + 1);
 
-        if (done) {
-            return "Successfully deleted file " + key;
+        if (key.compareTo(this.nodeHashValue) >= 0 && key.compareTo(nextNodeHashValue) < 0) {
+            // Send key as return message
+            final byte[] msg = this.storageManager.readFile(key).getBytes();
+            this.tcpDispatcher.sendMessage(msg, ip, port);
         } else {
-            // DO THINGS SEARCH FOR KEY ON OTHER NODES AND SUCH MAURO PART
-            // SEND TO CLIENT SAYING IT WAS UNSUCCESSFULL IF IT NEVER FINDS IT
-            return "Failed to delete file " + key;
+            String correctNodeID = findCorrectNode(key);
+            final byte[] msg = GetMessage.composeMessage(key, ip, port);
+            this.tcpDispatcher.sendMessage(msg, this.clusterIPs.get(correctNodeID),
+                    this.clusterPorts.get(correctNodeID));
         }
+    }
+
+    public void delete(String key, String ip, int port) {
+        int idx = this.clusterHashes.indexOf(this.nodeHashValue);
+        String nextNodeHashValue = this.clusterHashes.get(idx == this.clusterHashes.size() - 1 ? 0 : idx + 1);
+
+        if (key.compareTo(this.nodeHashValue) >= 0 && key.compareTo(nextNodeHashValue) < 0) {
+            this.storageManager.deleteFile(key);
+            // Send key as return message
+            final byte[] msg = key.getBytes();
+            this.tcpDispatcher.sendMessage(msg, ip, port);
+        } else {
+
+            String correctNodeID = findCorrectNode(key);
+            final byte[] msg = DeleteMessage.composeMessage(key, ip, port);
+            this.tcpDispatcher.sendMessage(msg, this.clusterIPs.get(correctNodeID),
+                    this.clusterPorts.get(correctNodeID));
+        }
+    }
+
+    private String findCorrectNode(String hashValue) {
+        for (int i = 0; i < this.clusterHashes.size(); i++) {
+            if (hashValue.compareTo(this.clusterHashes.get(i)) >= 0
+                    && hashValue.compareTo(this.clusterHashes.get((i + 1) % this.clusterHashes.size())) < 0) {
+                for (String id : clusterIDs) {
+                    String hash = Utils.bytesToHex(Utils.calculateHash(id.getBytes()));
+                    if (hash.equals(this.clusterHashes.get(i))) {
+                        return id;
+                    }
+                }
+            }
+        }
+        return null;
     }
 }

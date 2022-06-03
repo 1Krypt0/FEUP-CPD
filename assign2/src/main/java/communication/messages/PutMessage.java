@@ -8,25 +8,24 @@ import java.rmi.RemoteException;
 public class PutMessage extends Message {
     private final String body;
     private final Store node;
+    private final String[] header;
 
-    public PutMessage(Store node, String body) {
+    public PutMessage(Store node, String[] header, String body) {
         this.body = body;
         this.node = node;
+        this.header = header;
     }
 
     @Override
     public void handleMessage() throws RemoteException {
-        // TODO: To anything with the data that this function returns (send it to the
-        // client)
-        // node.put(new String(Utils.calculateHash(this.body.getBytes())), this.body);
-        // TODO Implement with proper functionality
-        node.put(this.body);
-
+        String ip = this.header[1].split(":")[1];
+        int port = Integer.parseInt(this.header[2].trim().split(":")[1]);
+        node.put(this.body, ip, port);
     }
 
-    public static byte[] composeMessage(String fileName) {
-        String string = "PUT" + Message.CRLF + Message.CRLF + fileName;
-
+    public static byte[] composeMessage(String fileName, String ip, int port) {
+        String string = "PUT" + " ip:" + ip + " port:" + Integer.toString(port) + Message.CRLF + Message.CRLF
+                + fileName;
         return string.getBytes(StandardCharsets.UTF_8);
     }
 
