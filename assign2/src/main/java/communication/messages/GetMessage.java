@@ -16,7 +16,6 @@ public class GetMessage extends Message {
         this.header = messageHeader;
     }
 
-    // TODO: Deal with handling the message here
     @Override
     public void handleMessage() {
         String ip = this.header[1].split(":")[1];

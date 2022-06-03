@@ -175,7 +175,6 @@ public class Store implements RMI {
                     .map(x -> Utils.bytesToHex(Utils.calculateHash(x.getBytes()))).collect(Collectors.toList());
             clusterIDs = Utils.getListUnion(clusterIDs, clusterMembers);
             clusterHashes = Utils.getListUnion(clusterHashes, clusterMemberHashes);
-            System.out.println("The updated cluster members are " + clusterIDs.toString());
             this.logManager.writeToLog(body);
         }
     }
@@ -306,27 +305,11 @@ public class Store implements RMI {
             final byte[] msg = hashValue.getBytes();
             this.tcpDispatcher.sendMessage(msg, ip, port);
         } else {
-
             String correctNodeID = findCorrectNode(hashValue);
             final byte[] msg = PutMessage.composeMessage(value, ip, port);
             this.tcpDispatcher.sendMessage(msg, this.clusterIPs.get(correctNodeID),
                     this.clusterPorts.get(correctNodeID));
         }
-    }
-
-    private String findCorrectNode(String hashValue) {
-        for (int i = 0; i < this.clusterHashes.size(); i++) {
-            if (hashValue.compareTo(this.clusterHashes.get(i)) >= 0
-                    && hashValue.compareTo(this.clusterHashes.get((i + 1) % this.clusterHashes.size())) < 0) {
-                for (String id : clusterIDs) {
-                    String hash = Utils.bytesToHex(Utils.calculateHash(id.getBytes()));
-                    if (hash.equals(this.clusterHashes.get(i))) {
-                        return id;
-                    }
-                }
-            }
-        }
-        return null;
     }
 
     public void get(String key, String ip, int port) {
@@ -338,7 +321,6 @@ public class Store implements RMI {
             final byte[] msg = this.storageManager.readFile(key).getBytes();
             this.tcpDispatcher.sendMessage(msg, ip, port);
         } else {
-
             String correctNodeID = findCorrectNode(key);
             final byte[] msg = GetMessage.composeMessage(key, ip, port);
             this.tcpDispatcher.sendMessage(msg, this.clusterIPs.get(correctNodeID),
@@ -362,5 +344,20 @@ public class Store implements RMI {
             this.tcpDispatcher.sendMessage(msg, this.clusterIPs.get(correctNodeID),
                     this.clusterPorts.get(correctNodeID));
         }
+    }
+
+    private String findCorrectNode(String hashValue) {
+        for (int i = 0; i < this.clusterHashes.size(); i++) {
+            if (hashValue.compareTo(this.clusterHashes.get(i)) >= 0
+                    && hashValue.compareTo(this.clusterHashes.get((i + 1) % this.clusterHashes.size())) < 0) {
+                for (String id : clusterIDs) {
+                    String hash = Utils.bytesToHex(Utils.calculateHash(id.getBytes()));
+                    if (hash.equals(this.clusterHashes.get(i))) {
+                        return id;
+                    }
+                }
+            }
+        }
+        return null;
     }
 }
