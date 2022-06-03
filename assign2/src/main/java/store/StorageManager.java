@@ -24,7 +24,7 @@ public class StorageManager {
     }
 
     public boolean deleteFile(String fileName) {
-        File file = new File(this.ROOT_DIR + fileName);
+        File file = new File(this.ROOT_DIR + "/" + fileName);
 
         if (file.delete()) {
             System.out.println("Deleted file " + fileName);
@@ -37,7 +37,7 @@ public class StorageManager {
 
     public String readFile(String fileName) {
         try {
-            Path path = Paths.get(this.ROOT_DIR + fileName);
+            Path path = Paths.get(this.ROOT_DIR + "/" + fileName);
             byte[] data = Files.readAllBytes(path);
             return new String(data);
         } catch (IOException e) {
