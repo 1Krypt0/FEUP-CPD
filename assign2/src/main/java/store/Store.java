@@ -279,20 +279,11 @@ public class Store implements RMI {
     }
 
     public String put(String key, String value) throws RemoteException {
-        final String logMessage = this.nodeID + " PUT " + key + " " + value + "\n";
-        this.logManager.writeToLog(logMessage);
         boolean done = this.storageManager.writeFile(key, value);
-
-        if (done) {
-            return "Successfully wrote to file with key " + key;
-        } else {
-            return "Failed to write to file with key " + key;
-        }
+        return "";
     }
 
     public String get(String key) throws RemoteException {
-        final String logMessage = this.nodeID + " GET " + key + "\n";
-        this.logManager.writeToLog(logMessage);
         String value = this.storageManager.readFile(key);
 
         if (value != null) {
@@ -304,9 +295,7 @@ public class Store implements RMI {
         }
     }
 
-    public String delete(String key) throws RemoteException{
-        final String logMessage = this.nodeID + " DELETE " + key + "\n";
-        this.logManager.writeToLog(logMessage);
+    public String delete(String key) throws RemoteException {
         boolean done = this.storageManager.deleteFile(key);
 
         if (done) {
