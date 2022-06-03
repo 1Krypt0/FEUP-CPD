@@ -344,8 +344,6 @@ public class Store implements RMI {
 
     // TODO: Pass actual data, let handlers separate the fields approprietly
     public void put(String value) {
-        String hashValue = Utils.bytesToHex(Utils.calculateHash(value.getBytes()));
-
         // boolean done = this.storageManager.writeFile(hashValue, value);
         // if hashValue inRange then save file and return key (ez)
         // else:
