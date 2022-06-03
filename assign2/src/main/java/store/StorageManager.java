@@ -11,12 +11,11 @@ public class StorageManager {
     private final String ROOT_DIR;
 
     public StorageManager(String nodeDir) {
-        this.ROOT_DIR = STORAGE_DIR + nodeDir + "/";
-
+        final String localDir = System.getProperty("user.dir");
+        this.ROOT_DIR = localDir + STORAGE_DIR + nodeDir;
         try {
-            String absolutePath = System.getProperty("user.dir") + ROOT_DIR;
-            Path path = Paths.get(absolutePath);
-            Files.createDirectory(path);
+            Path path = Paths.get(this.ROOT_DIR);
+            Files.createDirectories(path);
             System.out.println("Storage directory has been created");
         } catch (IOException e) {
             System.out.println("Error creating directories" + e.getMessage());
@@ -25,7 +24,7 @@ public class StorageManager {
     }
 
     public boolean deleteFile(String fileName) {
-        File file = new File(getStorageDir() + fileName);
+        File file = new File(this.ROOT_DIR + fileName);
 
         if (file.delete()) {
             System.out.println("Deleted file " + fileName);
@@ -36,13 +35,9 @@ public class StorageManager {
         }
     }
 
-    public String getStorageDir() {
-        return System.getProperty("user.dir") + ROOT_DIR;
-    }
-
     public String readFile(String fileName) {
         try {
-            Path path = Paths.get(getStorageDir() + fileName);
+            Path path = Paths.get(this.ROOT_DIR + fileName);
             byte[] data = Files.readAllBytes(path);
             return new String(data);
         } catch (IOException e) {
@@ -54,7 +49,7 @@ public class StorageManager {
 
     public boolean writeFile(String fileName, String fileContents) {
         try {
-            Path filePath = Paths.get(getStorageDir() + fileName);
+            Path filePath = Paths.get(this.ROOT_DIR + "/" + fileName);
             Files.write(filePath, fileContents.getBytes());
             System.out.println("Successfully wrote file " + fileName);
             return true;
