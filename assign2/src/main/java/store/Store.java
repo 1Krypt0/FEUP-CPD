@@ -35,6 +35,8 @@ public class Store implements RMI {
     private final HashMap<String, Integer> clusterPorts;
     private List<String> clusterIDs;
 
+    private final StorageManager storageManager;
+
     private MulticastDispatcher multicastDispatcher;
     private TCPDispatcher tcpDispatcher;
     private PeriodicMulticastMessageSender periodicSender;
@@ -90,6 +92,7 @@ public class Store implements RMI {
 
         this.logManager = new LogManager(this.nodeID);
 
+        this.storageManager = new StorageManager(this.nodeID);
     }
 
     public void initDispatchers(final String[] args) throws IOException {
@@ -288,9 +291,27 @@ public class Store implements RMI {
         // Send hashValue back to user
     }
 
-    public void get(String key) {
+    public String get(String key) throws RemoteException {
+        String value = this.storageManager.readFile(key);
+
+        if (value != null) {
+            return "Successfully read from file with key " + key + " and value " + value;
+        } else {
+            // DO THINGS SEARCH FOR KEY ON OTHER NODES AND SUCH MAURO PART
+            // SEND TO CLIENT SAYING IT WAS UNSUCCESSFULL IF IT NEVER FINDS IT
+            return "Failed to read from file with key " + key;
+        }
     }
 
-    public void delete(String key) {
+    public String delete(String key) throws RemoteException {
+        boolean done = this.storageManager.deleteFile(key);
+
+        if (done) {
+            return "Successfully deleted file " + key;
+        } else {
+            // DO THINGS SEARCH FOR KEY ON OTHER NODES AND SUCH MAURO PART
+            // SEND TO CLIENT SAYING IT WAS UNSUCCESSFULL IF IT NEVER FINDS IT
+            return "Failed to delete file " + key;
+        }
     }
 }
