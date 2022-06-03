@@ -5,7 +5,7 @@
 #
 # Be sure to chmod +x it first
 #
-# TO RUN IT IN THE PROJECT ROOT (/src/main/java) , do it as ../../../scripts/build.sh
+# TO RUN IT IN THE PROJECT ROOT (/src/main/java) , do it as ../../../scripts/cleanup.sh
 arg=$1
 all="all"
 if [ "$#" -eq 1 ];
