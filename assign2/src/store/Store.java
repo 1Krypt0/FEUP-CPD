@@ -237,6 +237,8 @@ public class Store implements RMI {
         this.tcpDispatcher.stopLoop();
         this.multicastDispatcher.stopLoop();
 
+        transferToSuccessor();
+
         return 0;
     }
 
@@ -277,16 +279,19 @@ public class Store implements RMI {
     }
 
     public void receiveLeaveMessage(String senderID, int membershipCounter) {
-        final String logMessage = senderID + " LEAVE " + Integer.toString(membershipCounter) + "\n";
-        this.logManager.writeToLog(logMessage);
-        this.clusterIDs.remove(senderID);
+        if (senderID.equals(nodeID)) {
+        } else {
+            final String logMessage = senderID + " LEAVE " + Integer.toString(membershipCounter) + "\n";
+            this.logManager.writeToLog(logMessage);
+            this.clusterIDs.remove(senderID);
 
-        //TODO: receive from predecessor
-        leaveRing(senderID);
-        updateSuccessor();
+            //TODO: receive from predecessor
+            leaveRing(senderID);
+            updateSuccessor();
 
-        this.clusterIPs.remove(senderID);
-        this.clusterPorts.remove(senderID);
+            this.clusterIPs.remove(senderID);
+            this.clusterPorts.remove(senderID);
+        }
     }
 
     private void sendJoinMessage() throws UnknownHostException {
