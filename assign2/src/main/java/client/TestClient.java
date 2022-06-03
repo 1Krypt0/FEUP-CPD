@@ -9,6 +9,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.InetAddress;
+import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.rmi.NotBoundException;
@@ -37,18 +38,20 @@ public class TestClient {
             String host = accessPoint[0];
             String nodeID = accessPoint[1];
 
-            Registry registry = LocateRegistry.getRegistry(host);
-            node = (RMI) registry.lookup(nodeID);
-
             String op = args[1];
             String res;
             String operand;
+            Registry registry;
 
             switch (op.toUpperCase()) {
             case "JOIN":
+                registry = LocateRegistry.getRegistry(host);
+                node = (RMI) registry.lookup(nodeID);
                 res = node.join();
                 break;
             case "LEAVE":
+                registry = LocateRegistry.getRegistry(host);
+                node = (RMI) registry.lookup(nodeID);
                 res = node.leave();
                 break;
             case "GET":
@@ -59,6 +62,7 @@ public class TestClient {
             case "PUT":
                 String fileValue = client.getFileValue(args[2]);
                 res = client.sendTCPMessage(op, fileValue, host, Integer.parseInt(nodeID));
+                break;
             default:
                 System.out.println("Unknown operation: " + op);
                 return;
@@ -78,18 +82,18 @@ public class TestClient {
     public String sendTCPMessage(String op, String operand, String destinationIP, int destinationPort) {
 
         try {
-            final InetAddress address = InetAddress.getByName(destinationIP);
-            final Socket socket = new Socket(address, destinationPort);
+            final Socket socket = new Socket(InetAddress.getByName(destinationIP), destinationPort);
+            final ServerSocket serverSocket = new ServerSocket(1337);
 
             final OutputStream stream = socket.getOutputStream();
             final PrintWriter writer = new PrintWriter(stream, true);
 
-            final String ip = socket.getLocalAddress().getHostAddress();
-            final int port = socket.getLocalPort();
+            final String ip = serverSocket.getInetAddress().getHostAddress();
+            final int port = serverSocket.getLocalPort();
 
             String message;
 
-            switch (op) {
+            switch (op.toUpperCase()) {
             case "PUT":
                 message = composePutMessage(operand, ip, port);
                 break;
@@ -105,35 +109,22 @@ public class TestClient {
             }
 
             writer.println(message);
-
-            final String res = this.getTCPResponse(socket);
-
             socket.close();
 
-            return res;
+            Socket inputSocket = serverSocket.accept();
+            InputStream inputStream = inputSocket.getInputStream();
 
+            byte[] msg = inputStream.readAllBytes();
+
+            serverSocket.close();
+
+            return new String(msg).trim();
         } catch (final UnknownHostException e) {
             System.out.println("Could not find remote machine");
             e.printStackTrace();
         } catch (IOException e) {
             System.out.println("Error sending TCP message: " + e.getMessage());
             e.printStackTrace();
-        }
-
-        return "";
-    }
-
-    public String getTCPResponse(Socket socket) {
-        try {
-
-            final InputStream stream = socket.getInputStream();
-
-            final byte[] msg = stream.readAllBytes();
-
-            return new String(msg).trim();
-
-        } catch (final IOException e) {
-            System.out.println("Error getting response from server");
         }
 
         return "";
