@@ -296,7 +296,8 @@ public class Store implements RMI {
         int idx = this.clusterHashes.indexOf(this.nodeHashValue);
         String nextNodeHashValue = this.clusterHashes.get(idx == this.clusterHashes.size() - 1 ? 0 : idx + 1);
 
-        if (hashValue.compareTo(this.nodeHashValue) >= 0 && hashValue.compareTo(nextNodeHashValue) < 0) {
+        if ((hashValue.compareTo(this.nodeHashValue) >= 0 && hashValue.compareTo(nextNodeHashValue) < 0)
+                || this.clusterIDs.size() == 1) {
             this.storageManager.writeFile(hashValue, value);
 
             // Send key as return message
