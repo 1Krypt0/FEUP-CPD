@@ -156,8 +156,15 @@ public class Store implements RMI {
     }
 
     private void updateSuccessor() {
-        int nodeIndex = this.clusterHashes.indexOf(this.nodeHashValue);
-        this.successorHash = this.clusterHashes.get((nodeIndex + 1) % this.clusterHashes.size());
+        switch (this.clusterHashes.size()){
+            case 0: // should never happen
+                this.successorHash = "";
+            case 1: // cluster with only this node
+                this.successorHash = this.nodeHashValue;
+            default:
+                int nodeIndex = this.clusterHashes.indexOf(this.nodeHashValue);
+                this.successorHash = this.clusterHashes.get((nodeIndex + 1) % this.clusterHashes.size());
+        }
     }
 
     /**
@@ -174,14 +181,8 @@ public class Store implements RMI {
      * @brief remove nodeHash from the local representation of the ring cluster
      */
     public void leaveRing(String nodeHash) {
-        Boolean removed = this.clusterHashes.remove(nodeHash);
-
-        if (removed) {
-            this.successorHash = "";
-        }
-        else {
-            System.out.println("Error leaving the local cluster");
-        }
+        this.clusterHashes.remove(nodeHash);
+        this.successorHash = "";
     }
 
     public int enterCluster() throws UnknownHostException {
@@ -224,7 +225,7 @@ public class Store implements RMI {
             return -1;
         }
 
-        transferToSuccessor();
+        // leave the local cluster
         leaveRing(this.nodeHashValue);
 
         this.membershipCounterManager.incrementMembershipCounter();
