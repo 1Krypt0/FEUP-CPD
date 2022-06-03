@@ -12,16 +12,16 @@ if [ "$#" -eq 1 ];
 then
     if [ "$1" = "$all" ];
     then
-        rm -rf ../../../storage/
-        rm -rf ../../../logs/
-        rm -rf ../../../membership/
+        rm -rf ../storage/
+        rm -rf ../logs/
+        rm -rf ../membership/
     else
         node_id=$1
-        rm -rf ../../../storage/${node_id}
-        rm -rf ../../../logs/${node_id}
-        rm -rf ../../../membership/${node_id}
+        rm -rf ../storage/${node_id}
+        rm -rf ../logs/${node_id}
+        rm -rf ../membership/${node_id}
     fi
 else
-    echo "Usage: $0 [<peer_id>] | all"
+    echo "Usage: $0 [<node_id>] | all"
     exit 1
 fi
