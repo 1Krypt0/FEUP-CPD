@@ -54,8 +54,6 @@ public class LogManager {
                     System.out.println("Error writing to file: " + e.getMessage());
                     e.printStackTrace();
                 }
-            } else {
-                System.out.println("The message" + individualMessage + " is repeated!");
             }
         }
     }
