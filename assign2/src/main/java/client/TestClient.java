@@ -44,11 +44,6 @@ public class TestClient {
             String res;
             String operand;
 
-            // TODO On key value operations, do a TCP message to a node put as an argument (
-            // create a socket for that )
-            // and then wait for the response ( a simple blocking operation is enough, it
-            // only needs a single response )
-            // and handle approprietly
             switch (op.toUpperCase()) {
             case "JOIN":
                 res = node.join();
@@ -56,25 +51,14 @@ public class TestClient {
             case "LEAVE":
                 res = node.leave();
                 break;
-            case "PUT":
-                // OPERAND = file path
-                operand = args[2];
-                String fileValue = client.getFileValue(operand);
-                String msg = client.composePutMessage(fileValue);
-                res = client.sendTCPMessage(msg, host, Integer.parseInt(nodeID));
-                break;
             case "GET":
-                // OPERAND = key
-                operand = args[2];
-                msg = client.composeGetMessage(operand);
-                res = client.sendTCPMessage(msg, host, Integer.parseInt(nodeID));
-                break;
             case "DELETE":
-                // OPERAND = key
                 operand = args[2];
-                msg = client.composeDeleteMessage(operand);
-                res = client.sendTCPMessage(msg, host, Integer.parseInt(nodeID));
+                res = client.sendTCPMessage(op, operand, host, Integer.parseInt(nodeID));
                 break;
+            case "PUT":
+                String fileValue = client.getFileValue(args[2]);
+                res = client.sendTCPMessage(op, fileValue, host, Integer.parseInt(nodeID));
             default:
                 System.out.println("Unknown operation: " + op);
                 return;
@@ -91,7 +75,7 @@ public class TestClient {
         }
     }
 
-    public String sendTCPMessage(String message, String destinationIP, int destinationPort) {
+    public String sendTCPMessage(String op, String operand, String destinationIP, int destinationPort) {
 
         try {
             final InetAddress address = InetAddress.getByName(destinationIP);
@@ -99,6 +83,26 @@ public class TestClient {
 
             final OutputStream stream = socket.getOutputStream();
             final PrintWriter writer = new PrintWriter(stream, true);
+
+            final String ip = socket.getLocalAddress().getHostAddress();
+            final int port = socket.getLocalPort();
+
+            String message;
+
+            switch (op) {
+            case "PUT":
+                message = composePutMessage(operand, ip, port);
+                break;
+            case "GET":
+                message = composeGetMessage(operand, ip, port);
+                break;
+            case "DELETE":
+                message = composeDeleteMessage(operand, ip, port);
+                break;
+            default:
+                message = "";
+                break;
+            }
 
             writer.println(message);
 
@@ -159,15 +163,15 @@ public class TestClient {
         return "";
     }
 
-    public String composePutMessage(String body) {
-        return "PUT" + CRLF + CRLF + body;
+    public String composePutMessage(String body, String ip, int port) throws UnknownHostException {
+        return "PUT" + " ip:" + ip + " port:" + Integer.toString(port) + CRLF + CRLF + body;
     }
 
-    public String composeGetMessage(String body) {
-        return "GET" + CRLF + CRLF + body;
+    public String composeGetMessage(String body, String ip, int port) {
+        return "GET" + " ip:" + ip + " port:" + Integer.toString(port) + CRLF + CRLF + body;
     }
 
-    public String composeDeleteMessage(String body) {
-        return "DELETE" + CRLF + CRLF + body;
+    public String composeDeleteMessage(String body, String ip, int port) {
+        return "DELETE" + " ip:" + ip + " port:" + Integer.toString(port) + CRLF + CRLF + body;
     }
 }
