@@ -282,6 +282,7 @@ public class Store implements RMI {
     public void put(String value) {
         String hashValue = Utils.bytesToHex(Utils.calculateHash(value.getBytes()));
 
+        // boolean done = this.storageManager.writeFile(hashValue, value);
         // if hashValue inRange then save file and return key (ez)
         // else:
         // determine correct node to send
