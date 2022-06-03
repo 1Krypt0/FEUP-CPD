@@ -1,7 +1,6 @@
 package communication.messages;
 
 import java.nio.charset.StandardCharsets;
-import java.rmi.RemoteException;
 
 import store.Store;
 

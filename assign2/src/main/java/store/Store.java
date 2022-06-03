@@ -4,6 +4,8 @@ import communication.MulticastDispatcher;
 import communication.PeriodicMulticastMessageSender;
 import communication.RMI;
 import communication.TCPDispatcher;
+import communication.messages.DeleteMessage;
+import communication.messages.GetMessage;
 import communication.messages.JoinMessage;
 import communication.messages.LeaveMessage;
 import communication.messages.MembershipMessage;
@@ -327,35 +329,35 @@ public class Store implements RMI {
         return null;
     }
 
-    public String get(String key, String ip, int port) {
+    public void get(String key, String ip, int port) {
         int idx = this.clusterHashes.indexOf(this.nodeHashValue);
         String nextNodeHashValue = this.clusterHashes.get(idx == this.clusterHashes.size() - 1 ? 0 : idx + 1);
 
-        if (hashValue.compareTo(this.nodeHashValue) >= 0 && hashValue.compareTo(nextNodeHashValue) < 0) {
+        if (key.compareTo(this.nodeHashValue) >= 0 && key.compareTo(nextNodeHashValue) < 0) {
             // Send key as return message
             final byte[] msg = this.storageManager.readFile(key).getBytes();
             this.tcpDispatcher.sendMessage(msg, ip, port);
         } else {
 
-            String correctNodeID = findCorrectNode(hashValue);
+            String correctNodeID = findCorrectNode(key);
             final byte[] msg = GetMessage.composeMessage(key, ip, port);
             this.tcpDispatcher.sendMessage(msg, this.clusterIPs.get(correctNodeID),
                     this.clusterPorts.get(correctNodeID));
         }
     }
 
-    public String delete(String key, String ip, int port) {
+    public void delete(String key, String ip, int port) {
         int idx = this.clusterHashes.indexOf(this.nodeHashValue);
         String nextNodeHashValue = this.clusterHashes.get(idx == this.clusterHashes.size() - 1 ? 0 : idx + 1);
 
-        if (hashValue.compareTo(this.nodeHashValue) >= 0 && hashValue.compareTo(nextNodeHashValue) < 0) {
-            this.storageManager.deleteFile(key)
+        if (key.compareTo(this.nodeHashValue) >= 0 && key.compareTo(nextNodeHashValue) < 0) {
+            this.storageManager.deleteFile(key);
             // Send key as return message
             final byte[] msg = key.getBytes();
             this.tcpDispatcher.sendMessage(msg, ip, port);
         } else {
 
-            String correctNodeID = findCorrectNode(hashValue);
+            String correctNodeID = findCorrectNode(key);
             final byte[] msg = DeleteMessage.composeMessage(key, ip, port);
             this.tcpDispatcher.sendMessage(msg, this.clusterIPs.get(correctNodeID),
                     this.clusterPorts.get(correctNodeID));

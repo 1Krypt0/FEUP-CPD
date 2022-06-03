@@ -3,7 +3,6 @@ package communication.messages;
 import store.Store;
 
 import java.nio.charset.StandardCharsets;
-import java.rmi.RemoteException;
 
 public class DeleteMessage extends Message {
 
