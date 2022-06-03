@@ -9,7 +9,7 @@ public class PutMessage extends Message {
     private final String body;
     private final Store node;
 
-    public PutMessage(String body, Store node) {
+    public PutMessage(Store node, String body) {
         this.body = body;
         this.node = node;
     }

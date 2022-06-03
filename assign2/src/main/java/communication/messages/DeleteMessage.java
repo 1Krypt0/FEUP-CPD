@@ -10,7 +10,7 @@ public class DeleteMessage extends Message {
     private final String body;
     private final Store node;
 
-    public DeleteMessage(String messageBody, Store node) {
+    public DeleteMessage(Store node, String messageBody) {
         this.body = messageBody;
         this.node = node;
     }
