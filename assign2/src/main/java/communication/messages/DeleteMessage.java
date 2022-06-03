@@ -18,10 +18,10 @@ public class DeleteMessage extends Message {
     }
 
     @Override
-    public void handleMessage() throws RemoteException {
-        // TODO: Deal with extracting the data here, only pass actual body
-        // Check Membership, Join and Delete for Examples
-        node.delete(this.body);
+    public void handleMessage() {
+        String ip = this.header[1].split(":")[1];
+        int port = Integer.parseInt(this.header[2].trim().split(":")[1]);
+        node.delete(this.body, ip, port);
     }
 
     public static byte[] composeMessage(String data, String ip, int port) {

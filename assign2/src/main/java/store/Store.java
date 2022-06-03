@@ -326,27 +326,38 @@ public class Store implements RMI {
         return null;
     }
 
-    public String get(String key) throws RemoteException {
-        String value = this.storageManager.readFile(key);
+    public String get(String key, String ip, int port) {
+        int idx = this.clusterHashes.indexOf(this.nodeHashValue);
+        String nextNodeHashValue = this.clusterHashes.get(idx == this.clusterHashes.size() - 1 ? 0 : idx + 1);
 
-        if (value != null) {
-            return "Successfully read from file with key " + key + " and value " + value;
+        if (hashValue.compareTo(this.nodeHashValue) >= 0 && hashValue.compareTo(nextNodeHashValue) < 0) {
+            // Send key as return message
+            final byte[] msg = this.storageManager.readFile(key).getBytes();
+            this.tcpDispatcher.sendMessage(msg, ip, port);
         } else {
-            // DO THINGS SEARCH FOR KEY ON OTHER NODES AND SUCH MAURO PART
-            // SEND TO CLIENT SAYING IT WAS UNSUCCESSFULL IF IT NEVER FINDS IT
-            return "Failed to read from file with key " + key;
+
+            String correctNodeID = findCorrectNode(hashValue);
+            final byte[] msg = GetMessage.composeMessage(key, ip, port);
+            this.tcpDispatcher.sendMessage(msg, this.clusterIPs.get(correctNodeID),
+                    this.clusterPorts.get(correctNodeID));
         }
     }
 
-    public String delete(String key) throws RemoteException {
-        boolean done = this.storageManager.deleteFile(key);
+    public String delete(String key, String ip, int port) {
+        int idx = this.clusterHashes.indexOf(this.nodeHashValue);
+        String nextNodeHashValue = this.clusterHashes.get(idx == this.clusterHashes.size() - 1 ? 0 : idx + 1);
 
-        if (done) {
-            return "Successfully deleted file " + key;
+        if (hashValue.compareTo(this.nodeHashValue) >= 0 && hashValue.compareTo(nextNodeHashValue) < 0) {
+            this.storageManager.deleteFile(key)
+            // Send key as return message
+            final byte[] msg = key.getBytes();
+            this.tcpDispatcher.sendMessage(msg, ip, port);
         } else {
-            // DO THINGS SEARCH FOR KEY ON OTHER NODES AND SUCH MAURO PART
-            // SEND TO CLIENT SAYING IT WAS UNSUCCESSFULL IF IT NEVER FINDS IT
-            return "Failed to delete file " + key;
+
+            String correctNodeID = findCorrectNode(hashValue);
+            final byte[] msg = DeleteMessage.composeMessage(key, ip, port);
+            this.tcpDispatcher.sendMessage(msg, this.clusterIPs.get(correctNodeID),
+                    this.clusterPorts.get(correctNodeID));
         }
     }
 }
