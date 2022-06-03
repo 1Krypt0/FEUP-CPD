@@ -26,4 +26,10 @@ public class Utils {
         union.addAll(clusterMembers);
         return new ArrayList<String>(union);
     }
+
+    public static byte[] getHash(String id){
+        MessageDigest digest = MessageDigest.getInstance("SHA-256");
+        byte[] hash = digest.digest(id.getBytes(StandardCharsets.UTF_8));
+        return hash;
+    }
 }
