@@ -279,6 +279,13 @@ public class Store implements RMI {
     public void put(String value) {
         String hashValue = Utils.bytesToHex(Utils.calculateHash(value.getBytes()));
 
+        // if hashValue inRange then save file and return key (ez)
+        // else:
+        // determine correct node to send
+        // compose tcp message
+        // send via tcp the values
+        // await for ACK response
+        // Send hashValue back to user
     }
 
     public void get(String key) {
