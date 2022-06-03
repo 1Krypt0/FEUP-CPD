@@ -28,8 +28,10 @@ public class PeriodicMulticastMessageSender {
                 final List<String> clusterIDs = node.getClusterIDs();
                 final String id = node.getID();
 
-                if (clusterIDs.get(0).equals(id)) {
-                    node.sendMulticastMembership();
+                if (clusterIDs.size() != 1) {
+                    if (clusterIDs.get(0).equals(id)) {
+                        node.sendMulticastMembership();
+                    }
                 }
             }
         }, 1, 1, TimeUnit.SECONDS);
