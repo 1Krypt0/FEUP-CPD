@@ -7,4 +7,4 @@
 #
 # TO RUN IT IN THE PROJECT ROOT, do it as ../scripts/build.sh
 
-javac -d ../../../build */*.java */*/*.java
+javac -d ./build */*.java */*/*.java
