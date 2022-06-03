@@ -7,6 +7,7 @@ import communication.TCPDispatcher;
 import communication.messages.JoinMessage;
 import communication.messages.LeaveMessage;
 import communication.messages.MembershipMessage;
+import communication.messages.PutMessage;
 import utils.Utils;
 
 import java.io.IOException;
@@ -289,7 +290,7 @@ public class Store implements RMI {
         }
     }
 
-    public void put(String value) {
+    public void put(String value, String ip, int port) {
         String hashValue = Utils.bytesToHex(Utils.calculateHash(value.getBytes()));
 
         int idx = this.clusterHashes.indexOf(this.nodeHashValue);
@@ -298,19 +299,31 @@ public class Store implements RMI {
         if (hashValue.compareTo(this.nodeHashValue) >= 0 && hashValue.compareTo(nextNodeHashValue) < 0) {
             this.storageManager.writeFile(hashValue, value);
 
+            // Send key as return message
             final byte[] msg = hashValue.getBytes();
+            this.tcpDispatcher.sendMessage(msg, ip, port);
+        } else {
 
-            this.tcpDispatcher.sendMessage(msg, "localh", 2);
+            String correctNodeID = findCorrectNode(hashValue);
+            final byte[] msg = PutMessage.composeMessage(value, ip, port);
+            this.tcpDispatcher.sendMessage(msg, this.clusterIPs.get(correctNodeID),
+                    this.clusterPorts.get(correctNodeID));
         }
+    }
 
-        // boolean done = this.storageManager.writeFile(hashValue, value);
-        // if hashValue inRange then save file and return key (ez)
-        // else:
-        // determine correct node to send
-        // compose tcp message
-        // send via tcp the values
-        // await for ACK response
-        // Send hashValue back to user
+    private String findCorrectNode(String hashValue) {
+        for (int i = 0; i < this.clusterHashes.size(); i++) {
+            if (hashValue.compareTo(this.clusterHashes.get(i)) >= 0
+                    && hashValue.compareTo(this.clusterHashes.get((i + 1) % this.clusterHashes.size())) < 0) {
+                for (String id : clusterIDs) {
+                    String hash = Utils.bytesToHex(Utils.calculateHash(id.getBytes()));
+                    if (hash.equals(this.clusterHashes.get(i))) {
+                        return id;
+                    }
+                }
+            }
+        }
+        return null;
     }
 
     public String get(String key) throws RemoteException {
