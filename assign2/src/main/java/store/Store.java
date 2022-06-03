@@ -276,15 +276,12 @@ public class Store implements RMI {
     }
 
     // TODO: Pass actual data, let handlers separate the fields approprietly
-    public void put(String key, String value) {
-        return null;
+    public void put(String value) {
     }
 
     public void get(String key) {
-        return null;
     }
 
-    public void delete(String key){
-        return null;
+    public void delete(String key) {
     }
 }
