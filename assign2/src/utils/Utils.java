@@ -1,5 +1,6 @@
 package utils;
 
+import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
@@ -11,13 +12,13 @@ public class Utils {
 
     private static final char[] HEX_ARRAY = "0123456789ABCDEF".toCharArray();
 
-    public static byte[] calculateHash(byte[] value) {
-        MessageDigest digest;
-        try {
-            digest = MessageDigest.getInstance("SHA-256");
-            return digest.digest(value);
+    public static byte[] calculateHash(String id){
+        try{
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            byte[] hash = digest.digest(id.getBytes(StandardCharsets.UTF_8));
+            return hash;
         } catch (NoSuchAlgorithmException e) {
-            System.out.println("Error getting hashing algorithm: " + e.getMessage());
+            System.out.println("Error during hashing of id: " + e.getMessage());
             e.printStackTrace();
         }
         return null;
@@ -30,7 +31,7 @@ public class Utils {
         return new ArrayList<String>(union);
     }
 
-    public static String bytesToHex(byte[] bytes) {
+    public static String bytesToHexString(byte[] bytes) {
         char[] hexChars = new char[bytes.length * 2];
         for (int j = 0; j < bytes.length; j++) {
             int v = bytes[j] & 0xFF;

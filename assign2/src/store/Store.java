@@ -20,26 +20,30 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
-import java.util.ArrayList;
+import java.util.*;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static utils.Utils.bytesToHexString;
+import static utils.Utils.calculateHash;
+
 public class Store implements RMI {
     private final String nodeID;
     private final String nodeHashValue;
     private final int tcpPort;
-    private final MembershipCounterManager membershipCounterManager;
+    private final store.MembershipCounterManager membershipCounterManager;
     private int receivedMembershipMessages;
 
-    private final LogManager logManager;
+    private final store.LogManager logManager;
 
     private final HashMap<String, String> clusterIPs;
     private final HashMap<String, Integer> clusterPorts;
     private List<String> clusterIDs;
     private List<String> clusterHashes;
+    private String successorHash;
 
     private final StorageManager storageManager;
 
@@ -86,7 +90,7 @@ public class Store implements RMI {
 
         this.receivedMembershipMessages = 0;
         this.nodeID = args[2];
-        this.nodeHashValue = Utils.bytesToHex(Utils.calculateHash(this.nodeID.getBytes()));
+        this.nodeHashValue = hashItem(this.nodeID);
         this.tcpPort = Integer.parseInt(args[3]);
 
         this.membershipCounterManager = new MembershipCounterManager(this.nodeID);
@@ -97,7 +101,7 @@ public class Store implements RMI {
         this.clusterHashes = new ArrayList<String>();
 
         this.clusterIDs.add(this.nodeID);
-        this.clusterHashes.add(Utils.bytesToHex(Utils.calculateHash(this.nodeID.getBytes())));
+        this.clusterHashes.add(this.nodeHashValue);
 
         this.logManager = new LogManager(this.nodeID);
 
@@ -117,6 +121,70 @@ public class Store implements RMI {
         this.periodicSender.updateMembershipPeriodically();
     }
 
+    @Override
+    public String join() throws RemoteException {
+        try {
+            int res = this.enterCluster();
+            if (res == 0) {
+                return "Node " + this.nodeID + " has joined the cluster";
+            } else {
+                return "Node has already joined the cluster";
+            }
+        } catch (UnknownHostException e) {
+            System.out.println("Cannot determine localhost");
+            e.printStackTrace();
+            return "Error: Cannot determine localhost";
+        }
+    }
+
+    @Override
+    public String leave() throws RemoteException {
+        int res = this.leaveCluster();
+        if (res == 0) {
+            return "Node " + this.nodeID + " has left the cluster";
+        } else {
+            return "Node has already left the cluster";
+        }
+    }
+
+    private String hashItem(String value) {
+        return bytesToHexString(calculateHash(value));
+    }
+
+    private void sortCluster() {
+        Collections.sort(this.clusterHashes);
+    }
+
+    private void updateSuccessor() {
+        switch (this.clusterHashes.size()){
+            case 0: // should never happen
+                this.successorHash = "";
+            case 1: // cluster with only this node
+                this.successorHash = this.nodeHashValue;
+            default:
+                int nodeIndex = this.clusterHashes.indexOf(this.nodeHashValue);
+                this.successorHash = this.clusterHashes.get((nodeIndex + 1) % this.clusterHashes.size());
+        }
+    }
+
+    /**
+     * @brief add nodeHash to the local representation of the ring cluster
+     */
+    public void joinRing(String nodeHash) {
+        if (!this.clusterHashes.contains(nodeHash)) {
+            this.clusterHashes.add(nodeHash);
+            sortCluster();
+        }
+    }
+
+    /**
+     * @brief remove nodeHash from the local representation of the ring cluster
+     */
+    public void leaveRing(String nodeHash) {
+        this.clusterHashes.remove(nodeHash);
+        this.successorHash = "";
+    }
+
     public int enterCluster() throws UnknownHostException {
 
         int counterValue = this.membershipCounterManager.getMembershipCounter();
@@ -124,6 +192,9 @@ public class Store implements RMI {
             System.out.println("Node has already joined the cluster");
             return -1;
         }
+
+        joinRing(this.nodeHashValue);
+        updateSuccessor();
 
         this.membershipCounterManager.incrementMembershipCounter();
         int sentJoinMessages = 0;
@@ -154,6 +225,9 @@ public class Store implements RMI {
             return -1;
         }
 
+        // leave the local cluster
+        leaveRing(this.nodeHashValue);
+
         this.membershipCounterManager.incrementMembershipCounter();
         final String logMessage = this.nodeID + " LEAVE "
                 + Integer.toString(membershipCounterManager.getMembershipCounter()) + "\n";
@@ -162,6 +236,8 @@ public class Store implements RMI {
         this.periodicSender.stopLoop();
         this.tcpDispatcher.stopLoop();
         this.multicastDispatcher.stopLoop();
+
+        transferToSuccessor();
 
         return 0;
     }
@@ -172,26 +248,27 @@ public class Store implements RMI {
             this.receivedMembershipMessages++;
             final List<String> clusterMembers = Arrays.asList(members.split("-"));
             final List<String> clusterMemberHashes = clusterMembers.stream()
-                    .map(x -> Utils.bytesToHex(Utils.calculateHash(x.getBytes()))).collect(Collectors.toList());
+                    .map(x -> hashItem(x)).collect(Collectors.toList());
+
             clusterIDs = Utils.getListUnion(clusterIDs, clusterMembers);
             clusterHashes = Utils.getListUnion(clusterHashes, clusterMemberHashes);
+            updateSuccessor();
             this.logManager.writeToLog(body);
         }
     }
 
     public void receiveJoinMessage(final String senderID, final int membershipCounter, final String senderIP,
-            final int senderPort) {
+                                   final int senderPort) {
         if (senderID.equals(nodeID)) {
         } else {
             if (!clusterIDs.contains(senderID)) {
                 // Update internal cluster state
                 this.clusterIDs.add(senderID);
-                this.clusterHashes.add(Utils.bytesToHex(Utils.calculateHash(senderID.getBytes())));
+                Collections.sort(this.clusterIDs);
+                joinRing(senderID);
+                updateSuccessor();
                 this.clusterIPs.put(senderID, senderIP);
                 this.clusterPorts.put(senderID, senderPort);
-
-                Collections.sort(this.clusterIDs);
-                Collections.sort(this.clusterHashes);
 
                 // Add to log events
                 final String logMessage = senderID + " JOIN " + Integer.toString(membershipCounter) + "\n";
@@ -202,12 +279,18 @@ public class Store implements RMI {
     }
 
     public void receiveLeaveMessage(String senderID, int membershipCounter) {
-        final String logMessage = senderID + " LEAVE " + Integer.toString(membershipCounter) + "\n";
-        this.logManager.writeToLog(logMessage);
-        this.clusterIDs.remove(senderID);
-        this.clusterHashes.remove(Utils.bytesToHex(Utils.calculateHash(senderID.getBytes())));
-        this.clusterIPs.remove(senderID);
-        this.clusterPorts.remove(senderID);
+        if (senderID.equals(nodeID)) {
+        } else {
+            final String logMessage = senderID + " LEAVE " + Integer.toString(membershipCounter) + "\n";
+            this.logManager.writeToLog(logMessage);
+            this.clusterIDs.remove(senderID);
+
+            leaveRing(senderID);
+            updateSuccessor();
+
+            this.clusterIPs.remove(senderID);
+            this.clusterPorts.remove(senderID);
+        }
     }
 
     private void sendJoinMessage() throws UnknownHostException {
@@ -265,39 +348,22 @@ public class Store implements RMI {
         System.out.println("Sent a MEMBERSHIP MULTICAST message with contents " + new String(msg));
     }
 
-    @Override
-    public String join() throws RemoteException {
-        try {
-            int res = this.enterCluster();
-            if (res == 0) {
-                return "Node " + this.nodeID + " has joined the cluster";
-            } else {
-                return "Node has already joined the cluster";
-            }
-        } catch (UnknownHostException e) {
-            System.out.println("Cannot determine localhost");
-            e.printStackTrace();
-            return "Error: Cannot determine localhost";
-        }
-    }
+    public void transferToSuccessor() {
+        List<String> nodeFiles = storageManager.getFiles();
 
-    @Override
-    public String leave() throws RemoteException {
-        int res = this.leaveCluster();
-        if (res == 0) {
-            return "Node " + this.nodeID + " has left the cluster";
-        } else {
-            return "Node has already left the cluster";
+        for(String file : nodeFiles){
+            String fileContents = storageManager.readFile(file);
+            String successorID = findCorrectNode(this.successorHash);
+            String successorIP = this.clusterIPs.get(successorID);
+            int successorPort = this.clusterPorts.get(successorID);
+            put(fileContents, successorIP, successorPort);
         }
     }
 
     public void put(String value, String ip, int port) {
-        String hashValue = Utils.bytesToHex(Utils.calculateHash(value.getBytes()));
+        String hashValue = hashItem(value);
 
-        int idx = this.clusterHashes.indexOf(this.nodeHashValue);
-        String nextNodeHashValue = this.clusterHashes.get(idx == this.clusterHashes.size() - 1 ? 0 : idx + 1);
-
-        if ((hashValue.compareTo(this.nodeHashValue) >= 0 && hashValue.compareTo(nextNodeHashValue) < 0)
+        if ((hashValue.compareTo(this.nodeHashValue) >= 0 && hashValue.compareTo(this.successorHash) < 0)
                 || this.clusterIDs.size() == 1) {
             this.storageManager.writeFile(hashValue, value);
 
@@ -313,10 +379,7 @@ public class Store implements RMI {
     }
 
     public void get(String key, String ip, int port) {
-        int idx = this.clusterHashes.indexOf(this.nodeHashValue);
-        String nextNodeHashValue = this.clusterHashes.get(idx == this.clusterHashes.size() - 1 ? 0 : idx + 1);
-
-        if (key.compareTo(this.nodeHashValue) >= 0 && key.compareTo(nextNodeHashValue) < 0) {
+        if (key.compareTo(this.nodeHashValue) >= 0 && key.compareTo(this.successorHash) < 0) {
             // Send key as return message
             final byte[] msg = this.storageManager.readFile(key).getBytes();
             this.tcpDispatcher.sendMessage(msg, ip, port);
@@ -329,16 +392,13 @@ public class Store implements RMI {
     }
 
     public void delete(String key, String ip, int port) {
-        int idx = this.clusterHashes.indexOf(this.nodeHashValue);
-        String nextNodeHashValue = this.clusterHashes.get(idx == this.clusterHashes.size() - 1 ? 0 : idx + 1);
 
-        if (key.compareTo(this.nodeHashValue) >= 0 && key.compareTo(nextNodeHashValue) < 0) {
+        if (key.compareTo(this.nodeHashValue) >= 0 && key.compareTo(this.successorHash) < 0) {
             this.storageManager.deleteFile(key);
             // Send key as return message
             final byte[] msg = key.getBytes();
             this.tcpDispatcher.sendMessage(msg, ip, port);
         } else {
-
             String correctNodeID = findCorrectNode(key);
             final byte[] msg = DeleteMessage.composeMessage(key, ip, port);
             this.tcpDispatcher.sendMessage(msg, this.clusterIPs.get(correctNodeID),
@@ -351,7 +411,7 @@ public class Store implements RMI {
             if (hashValue.compareTo(this.clusterHashes.get(i)) >= 0
                     && hashValue.compareTo(this.clusterHashes.get((i + 1) % this.clusterHashes.size())) < 0) {
                 for (String id : clusterIDs) {
-                    String hash = Utils.bytesToHex(Utils.calculateHash(id.getBytes()));
+                    String hash = hashItem(id);
                     if (hash.equals(this.clusterHashes.get(i))) {
                         return id;
                     }

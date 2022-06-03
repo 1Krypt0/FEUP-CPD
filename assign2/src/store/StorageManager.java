@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 
 public class StorageManager {
     private static final String STORAGE_DIR = "/../storage/";
@@ -57,6 +59,17 @@ public class StorageManager {
             System.out.println("Error writing file " + fileName + ": " + e.getMessage());
             return false;
         }
+    }
+
+    public List<String> getFiles(){
+        List<String> fileNameList = new ArrayList<String>();
+        File directory = new File(ROOT_DIR);
+        for (File file : directory.listFiles()) {
+            if(!file.isDirectory()){
+                fileNameList.add(file.getName());
+            }
+        }
+        return fileNameList;
     }
 
 }
