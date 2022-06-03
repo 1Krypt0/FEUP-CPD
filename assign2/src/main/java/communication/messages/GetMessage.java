@@ -19,8 +19,10 @@ public class GetMessage extends Message {
 
     // TODO: Deal with handling the message here
     @Override
-    public void handleMessage() throws RemoteException {
-        node.get(this.body);
+    public void handleMessage() {
+        String ip = this.header[1].split(":")[1];
+        int port = Integer.parseInt(this.header[2].trim().split(":")[1]);
+        node.get(this.body, ip, port);
     }
 
     public static byte[] composeMessage(String data, String ip, int port) {
