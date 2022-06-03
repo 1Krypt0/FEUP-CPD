@@ -22,9 +22,11 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class Store implements RMI {
     private final String nodeID;
+    private final String nodeHashValue;
     private final int tcpPort;
     private final MembershipCounterManager membershipCounterManager;
     private int receivedMembershipMessages;
@@ -34,6 +36,7 @@ public class Store implements RMI {
     private final HashMap<String, String> clusterIPs;
     private final HashMap<String, Integer> clusterPorts;
     private List<String> clusterIDs;
+    private List<String> clusterHashes;
 
     private final StorageManager storageManager;
 
@@ -80,6 +83,7 @@ public class Store implements RMI {
 
         this.receivedMembershipMessages = 0;
         this.nodeID = args[2];
+        this.nodeHashValue = Utils.bytesToHex(Utils.calculateHash(this.nodeID.getBytes()));
         this.tcpPort = Integer.parseInt(args[3]);
 
         this.membershipCounterManager = new MembershipCounterManager(this.nodeID);
@@ -87,8 +91,10 @@ public class Store implements RMI {
         this.clusterIPs = new HashMap<String, String>();
         this.clusterPorts = new HashMap<String, Integer>();
         this.clusterIDs = new ArrayList<String>();
+        this.clusterHashes = new ArrayList<String>();
 
         this.clusterIDs.add(this.nodeID);
+        this.clusterHashes.add(Utils.bytesToHex(Utils.calculateHash(this.nodeID.getBytes())));
 
         this.logManager = new LogManager(this.nodeID);
 
@@ -162,7 +168,10 @@ public class Store implements RMI {
         } else {
             this.receivedMembershipMessages++;
             final List<String> clusterMembers = Arrays.asList(members.split("-"));
+            final List<String> clusterMemberHashes = clusterMembers.stream()
+                    .map(x -> Utils.bytesToHex(Utils.calculateHash(x.getBytes()))).collect(Collectors.toList());
             clusterIDs = Utils.getListUnion(clusterIDs, clusterMembers);
+            clusterHashes = Utils.getListUnion(clusterHashes, clusterMemberHashes);
             System.out.println("The updated cluster members are " + clusterIDs.toString());
             this.logManager.writeToLog(body);
         }
@@ -175,14 +184,17 @@ public class Store implements RMI {
             if (!clusterIDs.contains(senderID)) {
                 // Update internal cluster state
                 this.clusterIDs.add(senderID);
+                this.clusterHashes.add(Utils.bytesToHex(Utils.calculateHash(senderID.getBytes())));
                 this.clusterIPs.put(senderID, senderIP);
                 this.clusterPorts.put(senderID, senderPort);
+
+                Collections.sort(this.clusterIDs);
+                Collections.sort(this.clusterHashes);
 
                 // Add to log events
                 final String logMessage = senderID + " JOIN " + Integer.toString(membershipCounter) + "\n";
                 this.logManager.writeToLog(logMessage);
                 sendMembershipMessage(senderIP, senderPort);
-                Collections.sort(this.clusterIDs);
             }
         }
     }
@@ -191,12 +203,11 @@ public class Store implements RMI {
         final String logMessage = senderID + " LEAVE " + Integer.toString(membershipCounter) + "\n";
         this.logManager.writeToLog(logMessage);
         this.clusterIDs.remove(senderID);
+        this.clusterHashes.remove(Utils.bytesToHex(Utils.calculateHash(senderID.getBytes())));
         this.clusterIPs.remove(senderID);
         this.clusterPorts.remove(senderID);
     }
 
-    // NOTE: For now, the destination IP is localhost because we are not sure if the
-    // ID will be the same as the ip
     private void sendJoinMessage() throws UnknownHostException {
         final byte[] msg = JoinMessage.composeMessage(this.nodeID, membershipCounterManager.getMembershipCounter(),
                 InetAddress.getLocalHost().getHostAddress(), this.tcpPort);
