@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.InetAddress;
@@ -20,7 +21,6 @@ import communication.RMI;
 public class TestClient {
 
     private static final String CRLF = "\r\n";
-
     private static RMI node;
 
     public static void main(String[] args) {
@@ -102,7 +102,11 @@ public class TestClient {
 
             writer.println(message);
 
+            final String res = this.getTCPResponse(socket);
+
             socket.close();
+
+            return res;
 
         } catch (final UnknownHostException e) {
             System.out.println("Could not find remote machine");
@@ -112,11 +116,23 @@ public class TestClient {
             e.printStackTrace();
         }
 
-        return this.getTCPResponse();
+        return "";
     }
 
-    public String getTCPResponse() {
-        return null;
+    public String getTCPResponse(Socket socket) {
+        try {
+
+            final InputStream stream = socket.getInputStream();
+
+            final byte[] msg = stream.readAllBytes();
+
+            return new String(msg).trim();
+
+        } catch (final IOException e) {
+            System.out.println("Error getting response from server");
+        }
+
+        return "";
     }
 
     public String getFileValue(String path) {
