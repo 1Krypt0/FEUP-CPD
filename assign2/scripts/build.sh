@@ -5,6 +5,6 @@
 #
 # Be sure to chmod +x
 #
-# TO RUN IT IN THE PROJECT ROOT, do it as ../../../scripts/build.sh
+# TO RUN IT IN THE PROJECT ROOT, do it as ../scripts/build.sh
 
 javac -d ../../../build */*.java */*/*.java
