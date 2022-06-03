@@ -289,9 +289,19 @@ public class Store implements RMI {
         }
     }
 
-    // TODO: Pass actual data, let handlers separate the fields approprietly
     public void put(String value) {
         String hashValue = Utils.bytesToHex(Utils.calculateHash(value.getBytes()));
+
+        int idx = this.clusterHashes.indexOf(this.nodeHashValue);
+        String nextNodeHashValue = this.clusterHashes.get(idx == this.clusterHashes.size() - 1 ? 0 : idx + 1);
+
+        if (hashValue.compareTo(this.nodeHashValue) >= 0 && hashValue.compareTo(nextNodeHashValue) < 0) {
+            this.storageManager.writeFile(hashValue, value);
+
+            final byte[] msg = hashValue.getBytes();
+
+            this.tcpDispatcher.sendMessage(msg, "localh", 2);
+        }
 
         // boolean done = this.storageManager.writeFile(hashValue, value);
         // if hashValue inRange then save file and return key (ez)
