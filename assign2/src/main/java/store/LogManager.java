@@ -83,25 +83,4 @@ public class LogManager {
         return null;
     }
 
-    public List<String> getLog() {
-        final File logFile = new File(this.logFile);
-        final List<String> log = new ArrayList<>();
-        try {
-            final BufferedReader reader = new BufferedReader(new FileReader(logFile));
-            String buf;
-            while ((buf = reader.readLine()) != null) {
-                log.add(buf);
-            }
-            reader.close();
-            return log;
-        } catch (final FileNotFoundException e) {
-            System.out.println("Error reading log File: " + e.getMessage());
-            e.printStackTrace();
-        } catch (final IOException e) {
-            System.out.println("Error closing log File: " + e.getMessage());
-            e.printStackTrace();
-        }
-        return null;
-    }
-
 }
