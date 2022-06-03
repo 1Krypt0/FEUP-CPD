@@ -17,23 +17,25 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
-import java.util.ArrayList;
+import java.util.*;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
+
+import static utils.Utils.*;
 
 public class Store implements RMI {
     private final String nodeID;
+    private final String nodeHash;
     private final int tcpPort;
-    private final MembershipCounterManager membershipCounterManager;
+    private final store.MembershipCounterManager membershipCounterManager;
     private int receivedMembershipMessages;
 
-    private final LogManager logManager;
+    private final store.LogManager logManager;
 
     private final HashMap<String, String> clusterIPs;
     private final HashMap<String, Integer> clusterPorts;
     private List<String> clusterIDs;
+    private List<String> clusterHashes;
+    private String successorHash;
 
     private final StorageManager storageManager;
 
@@ -80,6 +82,7 @@ public class Store implements RMI {
 
         this.receivedMembershipMessages = 0;
         this.nodeID = args[2];
+        this.nodeHash = hashNode(this.nodeID);
         this.tcpPort = Integer.parseInt(args[3]);
 
         this.membershipCounterManager = new MembershipCounterManager(this.nodeID);
@@ -87,6 +90,7 @@ public class Store implements RMI {
         this.clusterIPs = new HashMap<String, String>();
         this.clusterPorts = new HashMap<String, Integer>();
         this.clusterIDs = new ArrayList<String>();
+        this.clusterHashes = new ArrayList<String>();
 
         this.clusterIDs.add(this.nodeID);
 
@@ -108,6 +112,66 @@ public class Store implements RMI {
         this.periodicSender.updateMembershipPeriodically();
     }
 
+    @Override
+    public String join() throws RemoteException {
+        try {
+            int res = this.enterCluster();
+            if (res == 0) {
+                return "Node " + this.nodeID + " has joined the cluster";
+            } else {
+                return "Node has already joined the cluster";
+            }
+        } catch (UnknownHostException e) {
+            System.out.println("Cannot determine localhost");
+            e.printStackTrace();
+            return "Error: Cannot determine localhost";
+        }
+    }
+
+    @Override
+    public String leave() throws RemoteException {
+        int res = this.leaveCluster();
+        if (res == 0) {
+            return "Node " + this.nodeID + " has left the cluster";
+        } else {
+            return "Node has already left the cluster";
+        }
+    }
+
+    private String hashNode(String nodeID) {
+        return bytesToHexString(calculateHash(this.nodeID));
+    }
+
+    private void sortCluster() {
+        Collections.sort(this.clusterHashes);
+    }
+
+    private void updateSuccessor() {
+        int nodeIndex = this.clusterHashes.indexOf(nodeHash);
+        this.successorHash = this.clusterHashes.get((nodeIndex + 1) % this.clusterHashes.size());
+    }
+
+    /**
+     * @brief add nodeHash to the local representation of the ring cluster
+     */
+    public void joinRing(String nodeHash) {
+        if (!this.clusterHashes.contains(nodeHash)) {
+            this.clusterHashes.add(nodeHash);
+            sortCluster();
+        }
+    }
+
+    /**
+     * @brief remove nodeHash from the local representation of the ring cluster
+     */
+    public void leaveRing(String nodeHash) {
+        Boolean removed = this.clusterHashes.remove(nodeHash);
+
+        if (removed) {
+            this.successorHash = "";
+        }
+    }
+
     public int enterCluster() throws UnknownHostException {
 
         int counterValue = this.membershipCounterManager.getMembershipCounter();
@@ -116,6 +180,9 @@ public class Store implements RMI {
             return -1;
         }
 
+        //TODO: add this node's hashed id to cluster hash list
+        joinRing(this.nodeHash);
+        updateSuccessor();
         this.membershipCounterManager.incrementMembershipCounter();
         int sentJoinMessages = 0;
         final String logMessage = this.nodeID + " JOIN "
@@ -145,6 +212,9 @@ public class Store implements RMI {
             return -1;
         }
 
+        transferToSuccessor();
+        leaveRing(this.nodeHash);
+
         this.membershipCounterManager.incrementMembershipCounter();
         final String logMessage = this.nodeID + " LEAVE "
                 + Integer.toString(membershipCounterManager.getMembershipCounter()) + "\n";
@@ -162,14 +232,21 @@ public class Store implements RMI {
         } else {
             this.receivedMembershipMessages++;
             final List<String> clusterMembers = Arrays.asList(members.split("-"));
-            clusterIDs = Utils.getListUnion(clusterIDs, clusterMembers);
+            clusterIDs = getListUnion(clusterIDs, clusterMembers);
+
+            // update local cluster
+            for (String nodeID : clusterMembers) {
+                joinRing(hashNode(nodeID));
+            }
+            updateSuccessor();
+
             System.out.println("The updated cluster members are " + clusterIDs.toString());
             this.logManager.writeToLog(body);
         }
     }
 
     public void receiveJoinMessage(final String senderID, final int membershipCounter, final String senderIP,
-            final int senderPort) {
+                                   final int senderPort) {
         if (senderID.equals(nodeID)) {
         } else {
             if (!clusterIDs.contains(senderID)) {
@@ -177,6 +254,10 @@ public class Store implements RMI {
                 this.clusterIDs.add(senderID);
                 this.clusterIPs.put(senderID, senderIP);
                 this.clusterPorts.put(senderID, senderPort);
+
+                // update local cluster
+                joinRing(senderID);
+                updateSuccessor();
 
                 // Add to log events
                 final String logMessage = senderID + " JOIN " + Integer.toString(membershipCounter) + "\n";
@@ -191,6 +272,11 @@ public class Store implements RMI {
         final String logMessage = senderID + " LEAVE " + Integer.toString(membershipCounter) + "\n";
         this.logManager.writeToLog(logMessage);
         this.clusterIDs.remove(senderID);
+
+        //TODO: receive from predecessor
+        leaveRing(senderID);
+        updateSuccessor();
+
         this.clusterIPs.remove(senderID);
         this.clusterPorts.remove(senderID);
     }
@@ -252,30 +338,8 @@ public class Store implements RMI {
         System.out.println("Sent a MEMBERSHIP MULTICAST message with contents " + new String(msg));
     }
 
-    @Override
-    public String join() throws RemoteException {
-        try {
-            int res = this.enterCluster();
-            if (res == 0) {
-                return "Node " + this.nodeID + " has joined the cluster";
-            } else {
-                return "Node has already joined the cluster";
-            }
-        } catch (UnknownHostException e) {
-            System.out.println("Cannot determine localhost");
-            e.printStackTrace();
-            return "Error: Cannot determine localhost";
-        }
-    }
-
-    @Override
-    public String leave() throws RemoteException {
-        int res = this.leaveCluster();
-        if (res == 0) {
-            return "Node " + this.nodeID + " has left the cluster";
-        } else {
-            return "Node has already left the cluster";
-        }
+    public void transferToSuccessor() {
+        //TODO: transfer node contents to sucessor
     }
 
     // TODO: Pass actual data, let handlers separate the fields approprietly
