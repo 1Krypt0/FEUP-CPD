@@ -277,6 +277,8 @@ public class Store implements RMI {
 
     // TODO: Pass actual data, let handlers separate the fields approprietly
     public void put(String value) {
+        String hashValue = Utils.bytesToHex(Utils.calculateHash(value.getBytes()));
+
     }
 
     public void get(String key) {
