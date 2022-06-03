@@ -278,9 +278,18 @@ public class Store implements RMI {
         }
     }
 
-    public String put(String key, String value) throws RemoteException {
-        boolean done = this.storageManager.writeFile(key, value);
-        return "";
+    // TODO: Pass actual data, let handlers separate the fields approprietly
+    public void put(String value) {
+        String hashValue = Utils.bytesToHex(Utils.calculateHash(value.getBytes()));
+
+        // boolean done = this.storageManager.writeFile(hashValue, value);
+        // if hashValue inRange then save file and return key (ez)
+        // else:
+        // determine correct node to send
+        // compose tcp message
+        // send via tcp the values
+        // await for ACK response
+        // Send hashValue back to user
     }
 
     public String get(String key) throws RemoteException {

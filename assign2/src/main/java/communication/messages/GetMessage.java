@@ -10,7 +10,7 @@ public class GetMessage extends Message {
     private final String body;
     private final Store node;
 
-    public GetMessage(String messageBody, Store node) {
+    public GetMessage(Store node, String messageBody) {
         this.node = node;
         this.body = messageBody;
     }

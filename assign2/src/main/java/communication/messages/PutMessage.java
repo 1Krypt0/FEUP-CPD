@@ -9,7 +9,7 @@ public class PutMessage extends Message {
     private final String body;
     private final Store node;
 
-    public PutMessage(String body, Store node) {
+    public PutMessage(Store node, String body) {
         this.body = body;
         this.node = node;
     }
@@ -20,7 +20,7 @@ public class PutMessage extends Message {
         // client)
         // node.put(new String(Utils.calculateHash(this.body.getBytes())), this.body);
         // TODO Implement with proper functionality
-        node.put(new String(Utils.calculateHash(this.body.getBytes())), this.body);
+        node.put(this.body);
 
     }
 

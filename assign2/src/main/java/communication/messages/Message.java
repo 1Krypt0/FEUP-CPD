@@ -23,11 +23,11 @@ public abstract class Message {
         case "MEMBERSHIP":
             return new MembershipMessage(node, messageHeader, messageBody);
         case "PUT":
-            return new PutMessage(messageBody, node);
+            return new PutMessage(node, messageBody);
         case "GET":
-            return new GetMessage(messageBody, node);
+            return new GetMessage(node, messageBody);
         case "DELETE":
-            return new DeleteMessage(messageBody, node);
+            return new DeleteMessage(node, messageBody);
         default:
             break;
         }
