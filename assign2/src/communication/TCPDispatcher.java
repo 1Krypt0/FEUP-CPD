@@ -42,6 +42,7 @@ public class TCPDispatcher extends Thread {
 
                 final byte[] msg = stream.readAllBytes();
 
+                System.out.println("Received a TCP message with contents " + new String(msg));
                 executorService.submit(new MessageParser(msg, node));
 
             } catch (final IOException e) {

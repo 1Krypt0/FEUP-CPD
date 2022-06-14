@@ -20,8 +20,8 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
-import java.util.*;
 import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -159,11 +159,14 @@ public class Store implements RMI {
         switch (this.clusterHashes.size()){
             case 0: // should never happen
                 this.successorHash = "";
+                break;
             case 1: // cluster with only this node
                 this.successorHash = this.nodeHashValue;
+                break;
             default:
                 int nodeIndex = this.clusterHashes.indexOf(this.nodeHashValue);
                 this.successorHash = this.clusterHashes.get((nodeIndex + 1) % this.clusterHashes.size());
+                break;
         }
     }
 
@@ -232,12 +235,13 @@ public class Store implements RMI {
         final String logMessage = this.nodeID + " LEAVE "
                 + Integer.toString(membershipCounterManager.getMembershipCounter()) + "\n";
         logManager.writeToLog(logMessage);
+        this.clusterHashes.remove(this.nodeHashValue);
+        transferToSuccessor();
         sendLeaveMessage();
         this.periodicSender.stopLoop();
         this.tcpDispatcher.stopLoop();
         this.multicastDispatcher.stopLoop();
 
-        transferToSuccessor();
 
         return 0;
     }
@@ -265,7 +269,7 @@ public class Store implements RMI {
                 // Update internal cluster state
                 this.clusterIDs.add(senderID);
                 Collections.sort(this.clusterIDs);
-                joinRing(senderID);
+                joinRing(hashItem(senderID));
                 updateSuccessor();
                 this.clusterIPs.put(senderID, senderIP);
                 this.clusterPorts.put(senderID, senderPort);
@@ -280,7 +284,10 @@ public class Store implements RMI {
 
     public void receiveLeaveMessage(String senderID, int membershipCounter) {
         if (senderID.equals(nodeID)) {
+
         } else {
+            System.out.println("this node is " + this.nodeID);
+            System.out.println("sender node is " + senderID);
             final String logMessage = senderID + " LEAVE " + Integer.toString(membershipCounter) + "\n";
             this.logManager.writeToLog(logMessage);
             this.clusterIDs.remove(senderID);
@@ -350,12 +357,11 @@ public class Store implements RMI {
 
     public void transferToSuccessor() {
         List<String> nodeFiles = storageManager.getFiles();
-
+        String successorID = getSuccessor();
+        String successorIP = this.clusterIPs.get(successorID);
+        int successorPort = this.clusterPorts.get(successorID);
         for(String file : nodeFiles){
             String fileContents = storageManager.readFile(file);
-            String successorID = findCorrectNode(this.successorHash);
-            String successorIP = this.clusterIPs.get(successorID);
-            int successorPort = this.clusterPorts.get(successorID);
             put(fileContents, successorIP, successorPort);
         }
     }
@@ -363,7 +369,7 @@ public class Store implements RMI {
     public void put(String value, String ip, int port) {
         String hashValue = hashItem(value);
 
-        if ((hashValue.compareTo(this.nodeHashValue) >= 0 && hashValue.compareTo(this.successorHash) < 0)
+        if ((hashValue.compareTo(this.nodeHashValue) == 0) || (hashValue.compareTo(this.nodeHashValue) >= 0 && hashValue.compareTo(this.successorHash) < 0)
                 || this.clusterIDs.size() == 1) {
             this.storageManager.writeFile(hashValue, value);
 
@@ -379,7 +385,7 @@ public class Store implements RMI {
     }
 
     public void get(String key, String ip, int port) {
-        if (key.compareTo(this.nodeHashValue) >= 0 && key.compareTo(this.successorHash) < 0) {
+        if ((key.compareTo(this.nodeHashValue) == 0) ||  (key.compareTo(this.nodeHashValue) >= 0 && key.compareTo(this.successorHash) < 0) || this.clusterIDs.size() == 1)  {
             // Send key as return message
             final byte[] msg = this.storageManager.readFile(key).getBytes();
             this.tcpDispatcher.sendMessage(msg, ip, port);
@@ -393,7 +399,7 @@ public class Store implements RMI {
 
     public void delete(String key, String ip, int port) {
 
-        if (key.compareTo(this.nodeHashValue) >= 0 && key.compareTo(this.successorHash) < 0) {
+        if ((key.compareTo(this.nodeHashValue) == 0) ||  (key.compareTo(this.nodeHashValue) >= 0 && key.compareTo(this.successorHash) < 0) || this.clusterIDs.size() == 1) {
             this.storageManager.deleteFile(key);
             // Send key as return message
             final byte[] msg = key.getBytes();
@@ -407,9 +413,12 @@ public class Store implements RMI {
     }
 
     private String findCorrectNode(String hashValue) {
+        if (hashValue.equals(this.nodeHashValue)) {
+            return this.nodeID;
+        }
         for (int i = 0; i < this.clusterHashes.size(); i++) {
-            if (hashValue.compareTo(this.clusterHashes.get(i)) >= 0
-                    && hashValue.compareTo(this.clusterHashes.get((i + 1) % this.clusterHashes.size())) < 0) {
+            if (hashValue.compareTo(this.clusterHashes.get(i)) == 0 || ( hashValue.compareTo(this.clusterHashes.get(i)) >= 0
+                    && hashValue.compareTo(this.clusterHashes.get((i + 1) % this.clusterHashes.size())) < 0)) {
                 for (String id : clusterIDs) {
                     String hash = hashItem(id);
                     if (hash.equals(this.clusterHashes.get(i))) {
@@ -419,5 +428,16 @@ public class Store implements RMI {
             }
         }
         return null;
+    }
+
+    private String getSuccessor() {
+       String hashValue =  this.clusterHashes.get((this.clusterHashes.indexOf(this.nodeHashValue) + 1) % this.clusterHashes.size());
+       for (String id : this.clusterIDs) {
+           if (hashItem(id).equals(hashValue)) {
+               return id;
+           }
+       }
+
+       return null;
     }
 }
